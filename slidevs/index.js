@@ -15,28 +15,6 @@ function slidevs(inputSettings) {
 
     return {
 
-        // Getters
-        name: function() {
-            return settings.name;
-        }(),
-        layout: function() {
-            return settings.layout;
-        }(),
-        slidesFolder: function() {
-            return settings.slidesFolder;
-        }(),
-
-        // Setters
-        setName: function(name) {
-            settings.name = name.toLowerCase().replace(' ', '-') || 'slidevs-presentation';
-        },
-        setLayout: function(layout) {
-            settings.layout = layout.toLowerCase().replace('.html', '') + '.html' || '/layouts';
-        },
-        setSlidesFolder: function(slidesFolder) {
-            settings.slidesFolder = slidesFolder.toLowerCase().replace(' ', '') || '/slides';
-        },
-
         // Starter
         start: function() {
             startSlidevs(this);
@@ -62,6 +40,9 @@ function startSlidevs(slidevs) {
             console.log('Something went wrong during the start:'.red);
             console.log('There was an async error:', err);
         }
+
+        // IF ELSE ERROR
+
         else if(startError) {
             console.log('Something went wrong during the start:'.red);
             console.log(startError);
