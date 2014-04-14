@@ -1,0 +1,30 @@
+{
+  "name": "slidevs",
+  "version": "0.1.0",
+  "description": "An open source presentation framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/StevenOosterbeek/slidevs.git"
+  },
+  "keywords": [
+    "Presentation",
+    "framework",
+    "slide",
+    "slides",
+    "controls"
+  ],
+  "author": "Steven Oosterbeek <smile@stevenoosterbeek.nl>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/StevenOosterbeek/slidevs/issues"
+  },
+  "homepage": "https://github.com/StevenOosterbeek/slidevs",
+  "dependencies": {
+    "async": "~0.7.0",
+    "colors": "~0.6.2"
+  }
+}
