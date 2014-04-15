@@ -4,13 +4,11 @@
 
 var slidevs = require('slidevs');
 
-// Create a new slidev
-var myFirstSlidev = slidevs({
+var firstSlidevs = slidevs({
         name: 'Stevens Slidev',
         layout: 'layout',
         slidesFolder: '/slides',
         notes: true
     });
 
-// Start the slidev
-myFirstSlidev.start();
+firstSlidevs.start();
