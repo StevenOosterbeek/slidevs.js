@@ -2,7 +2,7 @@
     This file is being used for developing and testing slidevs
 */
 
-var slidevs = require('slidevs');
+var slidevs = require('./slidevs');
 
 var firstSlidevs = slidevs({
         name: 'Stevens Slidev',

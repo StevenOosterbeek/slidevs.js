@@ -142,6 +142,7 @@ function prepareSlides(slidevs, buildCallback) {
                         slideFile = fs.createReadStream(slidevs.thisFolder + slidevs.slidesFolder + '/' + slides[0]);
 
                     slideFile.pipe(tmpSlidesFile);
+                    buildCallback(null, slidevs);
 
                 }
             });

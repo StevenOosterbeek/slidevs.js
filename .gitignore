@@ -8,7 +8,7 @@ pids
 *.seed
 
 # Dependency directory
-# Do not ignore node_modules folder yet, for testing purposes
+node_modules
 
 # Created hidden folder for the slidevs presentation
 .slidevs
