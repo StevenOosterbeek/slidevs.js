@@ -19,6 +19,6 @@ var firstSlidevs = slidevs({
 firstSlidevs.start();
 ```
 
-### Future bugfixes
+### Future fixes
 - Order of slides within slides folder
 - Compressing slides and styling

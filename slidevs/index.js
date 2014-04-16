@@ -15,7 +15,7 @@ function slidevs(inputSettings) {
         name: inputSettings.name || 'Slidevs Presentation',
         layout: inputSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' || 'main-layout.html',
         slidesFolder: inputSettings.slidesFolder.toLowerCase().replace(' ', '') || '/slides',
-        styling: inputSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' || 'styling.css',
+        styling: inputSettings.styling ? inputSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
         notes: inputSettings.notes || false,
         port: inputSettings.port || 5000,
         thisFolder: path.dirname(module.parent.filename),
@@ -70,11 +70,11 @@ function startSlidevs(slidevs) {
             createSlidevsServer(slidevs, startCallback);
         }
     ], function(err, finalSlidev) {
-        if(err) showError('start async', err);
+        if (err) showError('start async', err);
         console.log('\n\nSLIDEVS.JS'.yellow + ' ##############################################\n'.grey);
-        console.log('Your slidev \''.green + finalSlidev.name.green  + '\' has been created!'.green + '\n');
-        console.log('Slides:'.bold , finalSlidev.slides.cyan);
-        console.log('Controls:'.bold , finalSlidev.controls.cyan);
+        console.log('Your slidev \''.green + finalSlidev.name.green + '\' has been created!'.green + '\n');
+        console.log('Slides:'.bold, finalSlidev.slides.cyan);
+        console.log('Controls:'.bold, finalSlidev.controls.cyan);
         console.log('\n#########################################################\n\n'.grey);
     });
 
@@ -99,7 +99,7 @@ function buildSlidevs(slidevs, startCallback) {
             concatSlidevs(slidevs, buildCallback);
         }
     ], function(err, slidevs) {
-        if(err) showError('build async', err);
+        if (err) showError('build async', err);
         else {
             console.log('\n== Done building ==');
             startCallback(null, slidevs);
@@ -115,7 +115,7 @@ function checkSlidevsFolder(slidevs, buildCallback) {
 
     function createSlidevsFolder() {
         fs.mkdir(slidevs.slidevsFolder, [], function(err) {
-            if(err) showError('creating a hidden slidevs folder' + err);
+            if (err) showError('creating a hidden slidevs folder' + err);
             else {
                 console.log('+ Checking folder done');
                 buildCallback(null, slidevs);
@@ -124,9 +124,9 @@ function checkSlidevsFolder(slidevs, buildCallback) {
     }
 
     fs.exists(slidevs.slidevsFolder, function(exists) {
-        if(exists) {
+        if (exists) {
             rimraf(slidevs.slidevsFolder, function(err) {
-                if(err) showError('deleting the hidden slidevs folder', err);
+                if (err) showError('deleting the hidden slidevs folder', err);
                 createSlidevsFolder();
             });
         } else createSlidevsFolder();
@@ -235,13 +235,11 @@ function prepareStyling(slidevs, buildCallback) {
 
     console.log('\nPreparing styling');
 
-    var slidevStyling = path.join(path.dirname(module.filename), 'slidevs.css'),
-        userStyling = slidevs.styling,
-        styling = path.join(slidevs.slidevsFolder, 'styling.css');
+    var styling = path.join(slidevs.slidevsFolder, 'slidevstyling.css');
 
     async.waterfall([
         function(stylingConcatCallback) {
-
+            var slidevStyling = path.join(path.dirname(module.filename), 'slidevs.css');
             fs.readFile(slidevStyling, 'utf-8', function(err, data) {
                 if (err) showError('getting default slidevs styling', err);
                 else {
@@ -251,16 +249,24 @@ function prepareStyling(slidevs, buildCallback) {
                     });
                 }
             });
-
         },
         function(slidevs, stylingConcatCallback) {
 
-            fs.readFile(userStyling, 'utf-8', function(err, data) {
-                if (err) showError('getting users slidevs styling', err);
-                else {
-                    fs.appendFile(styling, '\n\n' + data, function(err) {
-                        if (err) showError('creating styling file', err);
-                        else stylingConcatCallback(null, slidevs);
+            var userStyling = path.join(slidevs.thisFolder, slidevs.styling);
+
+            fs.exists(userStyling, function(exists) {
+                if (!exists) {
+                    showWarning('Did you forget to add styling for the slidev?');
+                    stylingConcatCallback(null, slidevs);
+                } else {
+                    fs.readFile(userStyling, 'utf-8', function(err, data) {
+                        if (err) showError('getting users slidevs styling', err);
+                        else {
+                            fs.appendFile(styling, '\n\n' + data, function(err) {
+                                if (err) showError('adding user styling to styling file', err);
+                                else stylingConcatCallback(null, slidevs);
+                            });
+                        }
                     });
                 }
             });
@@ -293,9 +299,14 @@ function concatSlidevs(slidevs, buildCallback) {
                 }))
                 .pipe(es.mapSync(function(line) {
                     line = line[0].trim();
-                    if (line.indexOf('-') === 2) line = ''; // Remove the title comment
-                    if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>'; // Replace title
-                    if (line.indexOf('[## Slidevs ##]') > -1) line = slides; // Place slides
+                    if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>';
+                    if (line.indexOf('[## Assets ##]') > -1) {
+
+                        // Adding necesary assets
+                        line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />';
+
+                    }
+                    if (line.indexOf('[## Slidevs ##]') > -1) line = slides;
                     return line;
                 }))
                 .pipe(es.join('\n'))
