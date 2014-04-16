@@ -11,7 +11,7 @@
     "url": "git://github.com/StevenOosterbeek/slidevs.git"
   },
   "keywords": [
-    "Presentation",
+    "presentation",
     "framework",
     "slide",
     "slides",
@@ -27,7 +27,6 @@
     "async": "~0.7.0",
     "colors": "~0.6.2",
     "event-stream": "~3.1.2",
-    "rimraf": "~2.2.6",
-    "q": "~1.0.1"
+    "rimraf": "~2.2.6"
   }
 }

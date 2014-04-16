@@ -2,7 +2,6 @@ var http = require('http'),
     fs = require('fs'),
     path = require('path'),
     es = require('event-stream'),
-    q = require('q'),
     rimraf = require('rimraf'),
     async = require('async'),
     colors = require('colors');
@@ -114,7 +113,7 @@ function checkSlidevsFolder(slidevs, buildCallback) {
     fs.exists(slidevs.slidevsFolder, function(exists) {
         if(exists) {
             rimraf(slidevs.slidevsFolder, function(err) {
-                if(err) showError('deleting temporary folder', err);
+                if(err) showError('deleting the hidden slidevs folder', err);
                 createSlidevsFolder();
             });
         } else createSlidevsFolder();
@@ -128,28 +127,61 @@ function prepareSlides(slidevs, buildCallback) {
     console.log('\nPreparing slides');
 
     var tmpSlidesFolder = slidevs.slidevsFolder + '/.slides-tmp';
-    fs.mkdir(tmpSlidesFolder, [], function(err) {
-        if(err) showError('creating hidden slides folder', err);
+    fs.mkdir(tmpSlidesFolder, 0777, function(err) {
+        if (err) showError('creating hidden slides folder', err);
         else {
-
             fs.readdir(slidevs.thisFolder + slidevs.slidesFolder, function(err, slides) {
-                if(err) showError('getting the slides', err);
-                if(slides.length < 2) showError('getting the slides', 'You need at least two slides!');
+                if (err) showError('preparing the slides', err);
+                if (slides.length < 2) showError('preparing the slides', 'You need at least two slides!');
                 else {
 
-                    // Should load each slide one by one
-                    var tmpSlidesFile = fs.createWriteStream(tmpSlidesFolder + '/slides.html'),
-                        slideFile = fs.createReadStream(slidevs.thisFolder + slidevs.slidesFolder + '/' + slides[0]);
+                    concatSlides = function() {
+                        slides.forEach(function(slide, index) {
+                            fs.readFile(tmpSlidesFolder + '/' + slide, function(err, data) {
+                                if (err) showError('getting a slide for concatting', err);
+                                else {
+                                    fs.appendFile(tmpSlidesFolder + '/slides.html', (data.toString() + '\n'), function(err) {
+                                        if (err) showError('adding slide to temporary slides file', err);
+                                        else {
+                                            fs.unlink(tmpSlidesFolder + '/' + slide, function(err) {
+                                                if (err) showError('deleting temporary slide file', err);
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                            if ((index + 1) === slides.length) buildCallback(null, slidevs);
+                        });
+                    };
 
-                    slideFile.pipe(tmpSlidesFile);
-                    buildCallback(null, slidevs);
+                    slides.forEach(function(slide, index) {
+
+                        var slideFile = fs.createReadStream(slidevs.thisFolder + slidevs.slidesFolder + '/' + slide),
+                            tmpSlideFile = fs.createWriteStream(tmpSlidesFolder + '/' + slide);
+
+                        slideFile
+                            .pipe(es.through(function(s) {
+                                var slide = s.toString();
+                                var resultSlide = '<div class="slide ' + (index + 1) + '">\n' + slide;
+                                this.emit('data', resultSlide);
+                            }, function() {
+                                this.emit('data', '\n</div>');
+                                this.emit('end');
+                            }))
+                            .pipe(tmpSlideFile)
+                            .on('error', function(err) {
+                                showError('piping a slide to his temporary file', err);
+                            })
+                            .on('finish', function() {
+                                if ((index + 1) === slides.length) concatSlides();
+                            });
+
+                    });
 
                 }
             });
-
         }
     });
-
 }
 
 // Create slidevs presentation
