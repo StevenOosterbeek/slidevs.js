@@ -94,7 +94,7 @@ function buildSlidevs(slidevs, startCallback) {
     ], function(err, slidevs) {
         if(err) showError('build async', err);
         else {
-            console.log('\nDone building');
+            console.log('\n== Done building ==');
             startCallback(null, slidevs);
         }
     });
@@ -109,7 +109,10 @@ function checkSlidevsFolder(slidevs, buildCallback) {
     function createSlidevsFolder() {
         fs.mkdir(slidevs.slidevsFolder, [], function(err) {
             if(err) showError('creating a hidden slidevs folder' + err);
-            else buildCallback(null, slidevs);
+            else {
+                console.log('+ Checking folder done');
+                buildCallback(null, slidevs);
+            }
         });
     }
 
@@ -139,22 +142,55 @@ function prepareSlides(slidevs, buildCallback) {
                 else {
 
                     concatSlides = function() {
-                        slides.forEach(function(slide, index) {
-                            fs.readFile(path.join(tmpSlidesFolder, slide), 'utf-8', function(err, data) {
-                                if (err) showError('getting a slide for concatting', err);
-                                else {
-                                    fs.appendFile(path.join(tmpSlidesFolder, 'slides.html'), (data.toString() + '\n'), function(err) {
-                                        if (err) showError('adding slide to temporary slides file', err);
+
+                        var slidesFile = path.join(tmpSlidesFolder, 'slides.html');
+
+                        async.waterfall([
+
+                            // Append first part of slider elements
+                            function(slideConcatCallback) {
+                                fs.appendFile(slidesFile, '<div class="slidevs-wrapper">\n<div class="slidevs-frame">\n<div class="slidevs-strip">\n', function(err) {
+                                    if (err) showError('appending the first elements of the slides container', err);
+                                    else slideConcatCallback();
+                                });
+                            },
+
+                            // Append slides
+                            function(slideConcatCallback) {
+                                slides.forEach(function(slide, index) {
+                                    fs.readFile(path.join(tmpSlidesFolder, slide), 'utf-8', function(err, data) {
+                                        if (err) showError('getting a slide for concatting', err);
                                         else {
-                                            fs.unlink(path.join(tmpSlidesFolder, slide), function(err) {
-                                                if (err) showError('deleting temporary slide file', err);
-                                                else if ((index + 1) === slides.length) buildCallback(null, slidevs);
+                                            fs.appendFile(path.join(tmpSlidesFolder, 'slides.html'), (data.toString() + '\n'), function(err) {
+                                                if (err) showError('adding slide to temporary slides file', err);
+                                                else {
+                                                    fs.unlink(path.join(tmpSlidesFolder, slide), function(err) {
+                                                        if (err) showError('deleting temporary slide file', err);
+                                                        else if ((index + 1) === slides.length) slideConcatCallback();
+                                                    });
+                                                }
                                             });
                                         }
                                     });
-                                }
-                            });
+                                });
+                            },
+
+                            // Append last part of slider elements
+                            function(slideConcatCallback) {
+                                fs.appendFile(slidesFile, '\n</div>\n</div>\n</div>', function(err) {
+                                    if (err) showError('appending the last elements the slides container');
+                                    else slideConcatCallback(null, slidevs);
+                                });
+                            }
+
+                        ], function(err, slidevs) {
+                            if (err) showError('build async', err);
+                            else {
+                                console.log('+ Preparing slides done');
+                                buildCallback(null, slidevs);
+                            }
                         });
+
                     };
 
                     slides.forEach(function(slide, index) {
@@ -217,8 +253,11 @@ function concatSlidevs(slidevs, buildCallback) {
                 })
                 .on('finish', function() {
                     rimraf(path.join(slidevs.slidevsFolder, '.slides-tmp'), function(err) {
-                        if(err) showError('removing temporary slides folder', err);
-                        buildCallback(null, slidevs);
+                        if (err) showError('removing temporary slides folder', err);
+                        else {
+                            console.log('+ Concating presentation done');
+                            buildCallback(null, slidevs);
+                        }
                     });
                 });
         }
