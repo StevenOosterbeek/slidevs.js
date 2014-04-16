@@ -4,6 +4,7 @@ var http = require('http'),
     es = require('event-stream'),
     rimraf = require('rimraf'),
     async = require('async'),
+    express = require('express'),
     colors = require('colors');
 
 module.exports = slidevs;
@@ -334,16 +335,29 @@ function createSlidevsServer(slidevs, startCallback) {
 
     console.log('\n=> Creating slidevs server'.grey);
 
-    var uri = {
+    var app = express(),
+        uri = {
             slides: '/' + slidevs.trimmedName,
             controls: '/' + slidevs.trimmedName + '/controls'
         };
 
+    app.get(uri.slides, function(req, res) {
+        res.send('Slides!');
+    });
+
+    app.get(uri.controls, function(req, res) {
+        res.send('Controls!');
+    });
+
+    app.listen(slidevs.port);
+
     var finalSlidev = {
         name: slidevs.name,
-        slides: 'http://localhost:3000' + uri.slides,
-        controls: 'http://localhost:3000' + uri.controls
+        slides: 'http://localhost:' + slidevs.port + uri.slides,
+        controls: 'http://localhost:' + slidevs.port + uri.controls
     };
+
+    console.log('\n+ Done creating server');
 
     startCallback(null, finalSlidev);
 
