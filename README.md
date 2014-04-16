@@ -20,3 +20,4 @@ firstSlidevs.start();
 
 ### Future bugfixes
 - Order of slides within slides folder
+- Compressing slides and styling

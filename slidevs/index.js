@@ -15,6 +15,7 @@ function slidevs(inputSettings) {
         name: inputSettings.name || 'Slidevs Presentation',
         layout: inputSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' || 'main-layout.html',
         slidesFolder: inputSettings.slidesFolder.toLowerCase().replace(' ', '') || '/slides',
+        styling: inputSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' || 'styling.css',
         notes: inputSettings.notes || false,
         port: inputSettings.port || 5000,
         thisFolder: path.dirname(module.parent.filename),
@@ -33,6 +34,9 @@ function slidevs(inputSettings) {
         }(),
         slidesFolder: function() {
             return settings.slidesFolder;
+        }(),
+        styling: function() {
+            return settings.styling;
         }(),
         notes: function() {
             return settings.notes;
@@ -67,8 +71,8 @@ function startSlidevs(slidevs) {
         }
     ], function(err, finalSlidev) {
         if(err) showError('start async', err);
-        console.log('\n\nSLIDEVS'.yellow + ' ######################################################\n'.grey);
-        console.log('Your slidev \''.green + finalSlidev.name.green  + '\' has been created!'.green);
+        console.log('\n\nSLIDEVS.JS'.yellow + ' ##############################################\n'.grey);
+        console.log('Your slidev \''.green + finalSlidev.name.green  + '\' has been created!'.green + '\n');
         console.log('Slides:'.bold , finalSlidev.slides.cyan);
         console.log('Controls:'.bold , finalSlidev.controls.cyan);
         console.log('\n#########################################################\n\n'.grey);
@@ -87,6 +91,9 @@ function buildSlidevs(slidevs, startCallback) {
         },
         function(slidevs, buildCallback) {
             prepareSlides(slidevs, buildCallback);
+        },
+        function(slidevs, buildCallback) {
+            prepareStyling(slidevs, buildCallback);
         },
         function(slidevs, buildCallback) {
             concatSlidevs(slidevs, buildCallback);
@@ -138,7 +145,7 @@ function prepareSlides(slidevs, buildCallback) {
         else {
             fs.readdir(path.join(slidevs.thisFolder, slidevs.slidesFolder), function(err, slides) {
                 if (err) showError('preparing the slides', err);
-                if (slides.length < 2) showError('preparing the slides', 'You need at least two slides!');
+                if (slides.length < 2) showWarning('You need at least two slides!');
                 else {
 
                     concatSlides = function() {
@@ -178,13 +185,13 @@ function prepareSlides(slidevs, buildCallback) {
                             // Append last part of slider elements
                             function(slideConcatCallback) {
                                 fs.appendFile(slidesFile, '\n</div>\n</div>\n</div>', function(err) {
-                                    if (err) showError('appending the last elements the slides container');
+                                    if (err) showError('appending the last elements the slides container', err);
                                     else slideConcatCallback(null, slidevs);
                                 });
                             }
 
                         ], function(err, slidevs) {
-                            if (err) showError('build async', err);
+                            if (err) showError('slides async', err);
                             else {
                                 console.log('+ Preparing slides done');
                                 buildCallback(null, slidevs);
@@ -221,6 +228,52 @@ function prepareSlides(slidevs, buildCallback) {
             });
         }
     });
+}
+
+// Concat styling
+function prepareStyling(slidevs, buildCallback) {
+
+    console.log('\nPreparing styling');
+
+    var slidevStyling = path.join(path.dirname(module.filename), 'slidevs.css'),
+        userStyling = slidevs.styling,
+        styling = path.join(slidevs.slidevsFolder, 'styling.css');
+
+    async.waterfall([
+        function(stylingConcatCallback) {
+
+            fs.readFile(slidevStyling, 'utf-8', function(err, data) {
+                if (err) showError('getting default slidevs styling', err);
+                else {
+                    fs.appendFile(styling, data, function(err) {
+                        if (err) showError('creating styling file', err);
+                        else stylingConcatCallback(null, slidevs);
+                    });
+                }
+            });
+
+        },
+        function(slidevs, stylingConcatCallback) {
+
+            fs.readFile(userStyling, 'utf-8', function(err, data) {
+                if (err) showError('getting users slidevs styling', err);
+                else {
+                    fs.appendFile(styling, '\n\n' + data, function(err) {
+                        if (err) showError('creating styling file', err);
+                        else stylingConcatCallback(null, slidevs);
+                    });
+                }
+            });
+
+        }
+    ], function(err, slidevs) {
+        if (err) showError('styling async', err);
+        else {
+            console.log('+ Preparing styling done');
+            buildCallback(null, slidevs);
+        }
+    });
+
 }
 
 // Create slidevs presentation
@@ -285,9 +338,15 @@ function createSlidevsServer(slidevs, startCallback) {
 
 }
 
-// Global error function
+// Global error and warning function
 function showError(location, message) {
-    console.log('\n\nSLIDEVS'.yellow + ' ######################################################\n'.grey);
+    console.log('\n\nSLIDEVS.JS'.yellow + ' ##############################################\n'.grey);
     console.log('Something went wrong during '.red + location.red + ':\n'.red + message);
+    console.log('\n#########################################################\n\n'.grey);
+}
+
+function showWarning(warning) {
+    console.log('\n\nSLIDEVS.JS'.yellow + ' ##############################################\n'.grey);
+    console.log(warning);
     console.log('\n#########################################################\n\n'.grey);
 }
