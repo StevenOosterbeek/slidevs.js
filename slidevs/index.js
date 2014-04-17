@@ -69,7 +69,8 @@ function startSlidevs(slidevs) {
             buildSlidevs(slidevs, startCallback);
         },
         function(slidevs, startCallback) {
-            createSlidevServer(slidevs, startCallback);
+            if(slidevs.isRunning()) startCallback(null, slidevs, null, true);
+            else createSlidevServer(slidevs, startCallback);
         },
         function(slidevs, slidevsInfo, alreadyRunning, startCallback) {
 
@@ -86,15 +87,15 @@ function startSlidevs(slidevs) {
             startCallback(null, slidevsInfo, alreadyRunning);
 
         }
-    ], function(err, slidevsInfo, alreadyRunning) {
+    ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
         else {
             console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------\n'.grey);
-            if (alreadyRunning) console.log('Your slidev \'' + slidevsInfo.name + '\' has been updated with your changes!');
+            if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
             else {
-                console.log('Your slidev \'' + slidevsInfo.name.bold + '\' has been created!\n');
-                console.log('Slides:'.bold, slidevsInfo.slides.yellow);
-                console.log('Controls:'.bold, slidevsInfo.controls.yellow);
+                console.log('Your slidev \'' + slidevs.name.bold + '\' has been created!\n');
+                console.log('Slides:'.bold, slidevLinks.slides.yellow);
+                console.log('Controls:'.bold, slidevLinks.controls.yellow);
             }
             console.log('\n-------------------------------------------------------------------------------\n\n'.grey);
         }
@@ -192,7 +193,7 @@ function prepareSlides(slidevs, buildCallback) {
 
                                 // Append first part of slider elements
                                 function(slideConcatCallback) {
-                                    fs.appendFile(slidesFile, '<div class="slidevs-wrapper">\n<div class="slidevs-frame">\n<div class="slidevs-strip">\n', function(err) {
+                                    fs.appendFile(slidesFile, '<div class="slidevs-wrapper">\n<div class="slidevs-strip">\n', function(err) {
                                         if (err) showMessage('appending the first elements of the slides container', err);
                                         else slideConcatCallback();
                                     });
@@ -220,7 +221,7 @@ function prepareSlides(slidevs, buildCallback) {
 
                                 // Append last part of slider elements
                                 function(slideConcatCallback) {
-                                    fs.appendFile(slidesFile, '\n</div>\n</div>\n</div>', function(err) {
+                                    fs.appendFile(slidesFile, '\n</div>\n</div>', function(err) {
                                         if (err) showMessage('appending the last elements the slides container', err);
                                         else slideConcatCallback(null, slidevs);
                                     });
@@ -389,6 +390,7 @@ function concatSlidevs(slidevs, buildCallback) {
                 }))
                 .pipe(es.mapSync(function(line) {
                     line = line[0].trim();
+                    if (line.indexOf('t') === 2) line = '<html class="no-js">';
                     if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>';
                     if (line.indexOf('[## Assets ##]') > -1) {
 
@@ -429,36 +431,30 @@ function createSlidevServer(slidevs, startCallback) {
             controls: '/' + slidevs.trimmedName + '/controls'
         };
 
-    var slidevsInfo = {
-        name: slidevs.name,
+    var slidevsLinks = {
         slides: 'http://localhost:' + slidevs.port + uris.slides,
         controls: 'http://localhost:' + slidevs.port + uris.controls
     };
 
-    if (slidevs.isRunning()) startCallback(null, slidevs, slidevsInfo, true);
-    else {
+    var app = express(),
+        slidevController = require('./controllers/slidev-controller'),
+        controlController = require('./controllers/control-controller');
 
-        var app = express(),
-            slidevController = require('./controllers/slidev-controller'),
-            controlController = require('./controllers/control-controller');
+    app.use(express.static(slidevs.slidevsFolder));
+    app.set('slidevsFolder', function() {
+        return slidevs.slidevsFolder;
+    }());
 
-        app.use(express.static(slidevs.slidevsFolder));
-        app.set('slidevsFolder', function() {
-            return slidevs.slidevsFolder;
-        }());
+    app.get(uris.slides, slidevController.serve);
+    app.get(uris.controls, controlController.serve);
 
-        app.get(uris.slides, slidevController.serve);
-        app.get(uris.controls, controlController.serve);
+    app.listen(slidevs.port);
 
-        app.listen(slidevs.port);
+    slidevs.isNowRunning();
 
-        slidevs.isNowRunning();
+    console.log('\n+ Done creating server');
 
-        console.log('\n+ Done creating server');
-
-        startCallback(null, slidevs, slidevsInfo, false);
-
-    }
+    startCallback(null, slidevs, slidevsLinks, false);
 
 }
 

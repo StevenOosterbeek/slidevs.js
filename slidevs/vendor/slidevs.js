@@ -1,1 +1,3 @@
-console.log('WORKING!');
+/*
+    Slidevs.js javascript, included during the build.
+*/

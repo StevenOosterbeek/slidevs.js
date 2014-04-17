@@ -1,5 +1,5 @@
 /*
-    Minimal required css for slidevs, included during the build.
+    Slidevs.js stylesheet, included during the build.
 */
 
 body {
@@ -8,11 +8,11 @@ body {
 }
 
 .slidevs-wrapper {
-    /**/
-}
-
-.slidevs-frame {
-    /**/
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #C5CFC6;
 }
 
 .slidevs-strip {
