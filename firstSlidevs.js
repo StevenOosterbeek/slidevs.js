@@ -2,10 +2,10 @@ var slidevs = require('./slidevs');
 
 var firstSlidevs = slidevs({
         name: 'Stevens Slidev',
-        layout: 'main-layout', // also default
-        slidesFolder: '/slides', // also default
-        styling: 'styling.css', // also default
-        port: 5000 // also default
+        layout: 'main-layout', // default
+        slidesFolder: '/slides', // default
+        styling: 'styling.css', // default
+        port: 5000 // default
     });
 
 firstSlidevs.start();
