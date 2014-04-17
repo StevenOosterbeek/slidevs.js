@@ -1,7 +1,7 @@
 var slidevs = require('./slidevs');
 
 var firstSlidevs = slidevs({
-        name: 'Stevens Slidev',
+        name: 'Steven Slidev',
         layout: 'main-layout', // default
         slidesFolder: '/slides', // default
         styling: 'styling.css', // default

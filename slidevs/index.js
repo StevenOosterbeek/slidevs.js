@@ -10,7 +10,6 @@ var http = require('http'),
 
 module.exports = slidevs;
 
-// Create slidev
 function slidevs(inputSettings) {
 
     settings = {
@@ -20,7 +19,6 @@ function slidevs(inputSettings) {
         slidesFolder: inputSettings.slidesFolder.toLowerCase().replace(' ', '') || '/slides',
         styling: inputSettings.styling ? inputSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
         scriptsFolder: inputSettings.scriptsFolder.toLowerCase().replace(' ', '') || '/scripts',
-        notes: inputSettings.notes || false,
         port: inputSettings.port || 5000,
         thisFolder: path.dirname(module.parent.filename),
         slidevsFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
@@ -94,8 +92,8 @@ function startSlidevs(slidevs) {
             if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
             else {
                 console.log('Your slidev \'' + slidevs.name.bold + '\' has been created!\n');
-                console.log('Slides:'.bold, slidevLinks.slides.yellow);
-                console.log('Controls:'.bold, slidevLinks.controls.yellow);
+                console.log('Slides:', slidevLinks.slides.yellow);
+                console.log('Controls:', slidevLinks.controls.yellow);
             }
             console.log('\n-------------------------------------------------------------------------------\n\n'.grey);
         }
@@ -174,7 +172,6 @@ function prepareSlides(slidevs, buildCallback) {
                 if (err) showMessage('preparing the slides', err);
                 if (slides.length < 2) showMessage('concatenating the slides', 'You need at least two slides!');
                 else {
-
                     var slidesAreNumbered = true;
                     slides.forEach(function(slide) {
                         var fileName = slide.replace('.html', ''),
@@ -193,12 +190,11 @@ function prepareSlides(slidevs, buildCallback) {
 
                                 // Append first part of slider elements
                                 function(slideConcatCallback) {
-                                    fs.appendFile(slidesFile, '<div class="slidevs-wrapper">\n<div class="slidevs-strip">\n', function(err) {
+                                    fs.appendFile(slidesFile, '<div class="slidevs-frame">\n<div class="slidevs-strip">\n', function(err) {
                                         if (err) showMessage('appending the first elements of the slides container', err);
                                         else slideConcatCallback();
                                     });
                                 },
-
                                 // Append slides
                                 function(slideConcatCallback) {
                                     slides.forEach(function(slide, index) {
@@ -218,7 +214,6 @@ function prepareSlides(slidevs, buildCallback) {
                                         });
                                     });
                                 },
-
                                 // Append last part of slider elements
                                 function(slideConcatCallback) {
                                     fs.appendFile(slidesFile, '\n</div>\n</div>', function(err) {
@@ -245,7 +240,7 @@ function prepareSlides(slidevs, buildCallback) {
                             slideFile
                                 .pipe(es.through(function(s) {
                                     var slide = s.toString();
-                                    var resultSlide = '\n<div class="slide ' + (index + 1) + '">\n' + slide;
+                                    var resultSlide = '\n<div class="slidev">\n' + slide;
                                     this.emit('data', resultSlide);
                                 }, function() {
                                     this.emit('data', '\n</div>');
@@ -262,7 +257,6 @@ function prepareSlides(slidevs, buildCallback) {
                         });
 
                     }
-
                 }
             });
         }
@@ -278,7 +272,7 @@ function prepareStyling(slidevs, buildCallback) {
 
     async.waterfall([
         function(stylingConcatCallback) {
-            var slidevStyling = path.join(path.dirname(module.filename), 'slidevs.css');
+            var slidevStyling = path.join(path.dirname(module.filename), '/vendor/slidevs.css');
             fs.readFile(slidevStyling, 'utf-8', function(err, data) {
                 if (err) showMessage('getting default slidevs styling', err);
                 else {
@@ -290,9 +284,7 @@ function prepareStyling(slidevs, buildCallback) {
             });
         },
         function(slidevs, stylingConcatCallback) {
-
             var userStyling = path.join(slidevs.thisFolder, slidevs.styling);
-
             fs.exists(userStyling, function(exists) {
                 if (!exists) {
                     showMessage('creating the styling', 'Did you forget to add styling for the slidev?');
@@ -309,7 +301,6 @@ function prepareStyling(slidevs, buildCallback) {
                     });
                 }
             });
-
         }
     ], function(err, slidevs) {
         if (err) showMessage('styling async', err);
@@ -329,25 +320,37 @@ function prepareScripts(slidevs, buildCallback) {
     var slidevScriptFile = path.join(slidevs.slidevsFolder, 'slidevs.js');
 
     var addScripts = function(which, slidevs, scriptsConcatCallback) {
-        var filesLocation = (which === 'slidevs') ? path.dirname(module.filename) + '/vendor' : path.join(slidevs.thisFolder, slidevs.scriptsFolder);
-        fs.readdir(filesLocation, function(err, scripts) {
-            if (err) showMessage('reading ' + which + ' scripts folder', err);
-            else {
-                scripts.forEach(function(script, index) {
-                    if(script !== '.DS_Store') {
-                        fs.readFile(path.join(filesLocation, script), 'utf-8', function(err, data) {
-                            if (err) showMessage('getting a ' + which + ' script for concatenation', err);
-                            else {
-                                fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
-                                    if (err) showMessage('adding ' + which + ' script to temporary slidevs.js file', err);
-                                    if ((index + 1) === scripts.length) scriptsConcatCallback(null, slidevs);
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        });
+        if(which === 'jQuery') {
+            fs.readFile(path.join(path.dirname(module.filename) + '/vendor/jquery-v1.11.0.js'), 'utf-8', function(err, data) {
+                if (err) showMessage('getting jQuery script for concatenation', err);
+                else {
+                    fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
+                        if (err) showMessage('adding jQuery script to temporary slidevs.js file', err);
+                        else scriptsConcatCallback(null, slidevs);
+                    });
+                }
+            });
+        } else {
+            var filesLocation = (which === 'slidevs') ? path.dirname(module.filename) + '/vendor' : path.join(slidevs.thisFolder, slidevs.scriptsFolder);
+            fs.readdir(filesLocation, function(err, scripts) {
+                if (err) showMessage('reading ' + which + ' scripts folder', err);
+                else {
+                    scripts.forEach(function(script, index) {
+                        if(script !== '.DS_Store' && script.substr(0, 6) !== 'jquery' && script.split('.')[1] === 'js') {
+                            fs.readFile(path.join(filesLocation, script), 'utf-8', function(err, data) {
+                                if (err) showMessage('getting a ' + which + ' script for concatenation', err);
+                                else {
+                                    fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
+                                        if (err) showMessage('adding ' + which + ' script to temporary slidevs.js file', err);
+                                        if ((index + 1) === scripts.length) scriptsConcatCallback(null, slidevs);
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     };
 
     async.waterfall([
@@ -356,6 +359,9 @@ function prepareScripts(slidevs, buildCallback) {
                 if (err) showMessage('creating the slidev.js file', err);
                 else scriptsConcatCallback(null, slidevs);
             });
+        },
+        function(slidevs, scriptsConcatCallback) {
+            addScripts('jQuery', slidevs, scriptsConcatCallback); // Adding jQuery quaranteed on top
         },
         function(slidevs, scriptsConcatCallback) {
             addScripts('slidevs', slidevs, scriptsConcatCallback);
@@ -392,12 +398,7 @@ function concatSlidevs(slidevs, buildCallback) {
                     line = line[0].trim();
                     if (line.indexOf('t') === 2) line = '<html class="no-js">';
                     if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>';
-                    if (line.indexOf('[## Assets ##]') > -1) {
-
-                        // Adding necesary assets
-                        line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="slidevs.js"></script>';
-
-                    }
+                    if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="slidevs.js"></script>';
                     if (line.indexOf('[## Slidevs ##]') > -1) line = slides;
                     return line;
                 }))
@@ -458,7 +459,7 @@ function createSlidevServer(slidevs, startCallback) {
 
 }
 
-// Global error and warning function
+// Global message
 function showMessage(location, message) {
     console.log('\n\nSLIDEVS.JS'.red + ' --------------------------------------------------------------------\n'.grey);
     console.log('Something went wrong during '.grey + location.grey + ':\n'.grey + message);
