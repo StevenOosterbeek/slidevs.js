@@ -2,6 +2,11 @@
     Minimal required css for slidevs, included during the build.
 */
 
+body {
+    margin: 0;
+    padding: 0;
+}
+
 .slidevs-wrapper {
     /**/
 }
@@ -11,5 +16,9 @@
 }
 
 .slidevs-strip {
+    /**/
+}
+
+.slide {
     /**/
 }
