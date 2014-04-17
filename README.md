@@ -19,7 +19,7 @@ var firstSlidevs = slidevs({
 firstSlidevs.start();
 ```
 
-### Future fixes
+#### Future fixes
 - Compressing styling and scripts
 - Possibility for multiple styling files
 - Adding images within the slides

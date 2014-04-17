@@ -1,5 +1,4 @@
-var os = require('os'),
-    fs = require('fs'),
+var fs = require('fs'),
     path = require('path'),
     es = require('event-stream'),
     rimraf = require('rimraf'),
@@ -14,11 +13,11 @@ function slidevs(inputSettings) {
 
     settings = {
 
-        name: inputSettings.name || 'Slidevs Presentation',
-        layout: inputSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' || 'main-layout.html',
-        slidesFolder: inputSettings.slidesFolder.toLowerCase().replace(' ', '') || '/slides',
+        name: inputSettings.name ? inputSettings.name : 'Slidevs Presentation',
+        layout: inputSettings.layout ? inputSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' : 'main-layout.html',
+        slidesFolder: inputSettings.slidesFolder ? inputSettings.slidesFolder.toLowerCase().replace(' ', '') : '/slides',
         styling: inputSettings.styling ? inputSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
-        scriptsFolder: inputSettings.scriptsFolder.toLowerCase().replace(' ', '') || '/scripts',
+        scriptsFolder: inputSettings.scriptsFolder ? inputSettings.scriptsFolder.toLowerCase().replace(' ', '') : '/scripts',
         port: inputSettings.port || 5000,
         thisFolder: path.dirname(module.parent.filename),
         slidevsFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
@@ -88,14 +87,15 @@ function startSlidevs(slidevs) {
     ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
         else {
-            console.log('\n\nSLIDEVS.JS'.yellow + ' -----------------------------------------------------------------\n'.grey);
+            console.log('\n\nSLIDEVS.JS'.yellow + ' ----------------------------------------------------------------------------\n'.grey);
             if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
             else {
-                console.log('Your slidev \'' + slidevs.name.bold + '\' has been created!\n');
-                console.log('Slides:', slidevLinks.slides.yellow);
+                console.log('Your slidevs \'' + slidevs.name.bold + '\' has been created and is now up and running!\n');
+                console.log('Slidevs:', slidevLinks.slides.yellow);
                 console.log('Controls:', slidevLinks.controls.yellow);
+                console.log('\n(i) Changes made in the layout, slides, styling or script(s) will rebuild your Slidevs!');
             }
-            console.log('\n----------------------------------------------------------------------------\n\n'.grey);
+            console.log('\n---------------------------------------------------------------------------------------\n\n'.grey);
         }
 
     });
@@ -427,7 +427,8 @@ function createSlidevServer(slidevs, startCallback) {
 
     console.log('\n=> Creating slidevs server'.grey);
 
-    var uris = {
+    var os = require('os'),
+        uris = {
             slides: '/' + slidevs.trimmedName,
             controls: '/' + slidevs.trimmedName + '/controls'
         },
@@ -459,9 +460,9 @@ function createSlidevServer(slidevs, startCallback) {
 
 }
 
-// Global message
+// Global message function
 function showMessage(location, message) {
-    console.log('\n\nSLIDEVS.JS'.yellow + ' -----------------------------------------------------------------\n'.grey);
+    console.log('\n\nSLIDEVS.JS'.red + ' ----------------------------------------------------------------------------\n'.grey);
     console.log('Something went wrong during '.grey + location.grey + ':\n'.grey + message);
-    console.log('\n----------------------------------------------------------------------------\n\n'.grey);
+    console.log('\n---------------------------------------------------------------------------------------\n\n'.grey);
 }
