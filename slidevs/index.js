@@ -1,4 +1,4 @@
-var http = require('http'),
+var os = require('os'),
     fs = require('fs'),
     path = require('path'),
     es = require('event-stream'),
@@ -88,14 +88,14 @@ function startSlidevs(slidevs) {
     ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
         else {
-            console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------\n'.grey);
+            console.log('\n\nSLIDEVS.JS'.yellow + ' -----------------------------------------------------------------\n'.grey);
             if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
             else {
                 console.log('Your slidev \'' + slidevs.name.bold + '\' has been created!\n');
                 console.log('Slides:', slidevLinks.slides.yellow);
                 console.log('Controls:', slidevLinks.controls.yellow);
             }
-            console.log('\n-------------------------------------------------------------------------------\n\n'.grey);
+            console.log('\n----------------------------------------------------------------------------\n\n'.grey);
         }
 
     });
@@ -430,15 +430,15 @@ function createSlidevServer(slidevs, startCallback) {
     var uris = {
             slides: '/' + slidevs.trimmedName,
             controls: '/' + slidevs.trimmedName + '/controls'
+        },
+        address = (os.networkInterfaces().en1[1].address !== null ? os.networkInterfaces().en1[1].address : 'http://localhost');
+        slidevsLinks = {
+            slides: address + ':' + slidevs.port + uris.slides,
+            controls: address + ':' + slidevs.port + uris.controls
         };
 
-    var slidevsLinks = {
-        slides: 'http://localhost:' + slidevs.port + uris.slides,
-        controls: 'http://localhost:' + slidevs.port + uris.controls
-    };
-
     var app = express(),
-        slidevController = require('./controllers/slidev-controller'),
+        slidevController = require('./controllers/slidevs-controller'),
         controlController = require('./controllers/control-controller');
 
     app.use(express.static(slidevs.slidevsFolder));
@@ -461,7 +461,7 @@ function createSlidevServer(slidevs, startCallback) {
 
 // Global message
 function showMessage(location, message) {
-    console.log('\n\nSLIDEVS.JS'.red + ' --------------------------------------------------------------------\n'.grey);
+    console.log('\n\nSLIDEVS.JS'.yellow + ' -----------------------------------------------------------------\n'.grey);
     console.log('Something went wrong during '.grey + location.grey + ':\n'.grey + message);
-    console.log('\n-------------------------------------------------------------------------------\n\n'.grey);
+    console.log('\n----------------------------------------------------------------------------\n\n'.grey);
 }

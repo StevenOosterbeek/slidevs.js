@@ -1,5 +1,5 @@
 /*
-    Slidevs.js front-end, included during the build.
+    Slidevs front-end functionality, included during the build
 */
 
 $(document).ready(function() {
@@ -22,21 +22,20 @@ $(document).ready(function() {
         },
         slide: function(direction) {
             if(!this.isSliding) {
-                this.isSliding = true;
                 var distance;
                 switch(direction) {
                     case 'right':
                         if((this.currentSlide + 1) < this.totalSlides) {
+                            this.isSliding = true;
                             distance = parseInt(this.strip.css('left').replace('px', ''), 10) - this.getFrameWidth();
                             this.currentSlide = this.currentSlide + 1;
-                            console.log('CURRENT SLIDE:', this.currentSlide);
                         }
                         break;
                     case 'left':
                         if(this.currentSlide > 0) {
+                            this.isSliding = true;
                             distance = parseInt(this.strip.css('left').replace('px', ''), 10) + this.getFrameWidth();
                             this.currentSlide = this.currentSlide - 1;
-                            console.log('CURRENT SLIDE:', this.currentSlide);
                         }
                         break;
                     default:
