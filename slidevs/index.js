@@ -9,16 +9,17 @@ var fs = require('fs'),
 
 module.exports = slidevs;
 
-function slidevs(inputSettings) {
+function slidevs(userSettings) {
 
     settings = {
 
-        name: inputSettings.name ? inputSettings.name : 'Slidevs Presentation',
-        layout: inputSettings.layout ? inputSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' : 'main-layout.html',
-        slidesFolder: inputSettings.slidesFolder ? inputSettings.slidesFolder.toLowerCase().replace(' ', '') : '/slides',
-        styling: inputSettings.styling ? inputSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
-        scriptsFolder: inputSettings.scriptsFolder ? inputSettings.scriptsFolder.toLowerCase().replace(' ', '') : '/scripts',
-        port: inputSettings.port || 5000,
+        name: userSettings.name ? userSettings.name : 'Slidevs Presentation',
+        layout: userSettings.layout ? userSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' : 'main-layout.html',
+        slidesFolder: userSettings.slidesFolder ? '/' + userSettings.slidesFolder.toLowerCase().replace(' ', '').replace('/', '') : '/slides',
+        styling: userSettings.styling ? userSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
+        scriptsFolder: userSettings.scriptsFolder ? userSettings.scriptsFolder.toLowerCase().replace(' ', '') : '/scripts',
+        progressBar: typeof(userSettings.progressBar) === 'boolean' ? userSettings.progressBar : true,
+        port: userSettings.port || 5000,
         thisFolder: path.dirname(module.parent.filename),
         slidevsFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
         running: false
@@ -45,7 +46,7 @@ function slidevs(inputSettings) {
         slidesFolder: settings.slidesFolder,
         styling: settings.styling,
         scriptsFolder: settings.scriptsFolder,
-        notes: settings.notes,
+        progressBar: settings.progressBar,
         port: settings.port,
 
         // Folders
@@ -182,7 +183,7 @@ function prepareSlides(slidevs, buildCallback) {
                     if(!slidesAreNumbered) showMessage('concatenating the slides', 'Could you please number your slides as following? > slide-1.html, slide-2.html');
                     else {
 
-                        concatSlides = function() {
+                        var concatSlides = function() {
 
                             var slidesFile = path.join(tmpSlidesFolder, 'slides.html');
 
@@ -232,6 +233,7 @@ function prepareSlides(slidevs, buildCallback) {
 
                         };
 
+                        // First wrap each slide in a single slidev wrapper element
                         slides.forEach(function(slide, index) {
 
                             var slideFile = fs.createReadStream(path.join(slidevs.thisFolder, slidevs.slidesFolder, slide)),
@@ -336,7 +338,7 @@ function prepareScripts(slidevs, buildCallback) {
                 if (err) showMessage('reading ' + which + ' scripts folder', err);
                 else {
                     scripts.forEach(function(script, index) {
-                        if(script !== '.DS_Store' && script.substr(0, 6) !== 'jquery' && script.split('.')[1] === 'js') {
+                        if(script !== '.DS_Store' && script.substr(0, 6) !== 'jquery' && script.substr((script.length - 2), 2) === 'js') {
                             fs.readFile(path.join(filesLocation, script), 'utf-8', function(err, data) {
                                 if (err) showMessage('getting a ' + which + ' script for concatenation', err);
                                 else {
@@ -399,7 +401,10 @@ function concatSlidevs(slidevs, buildCallback) {
                     if (line.indexOf('t') === 2) line = '<html class="no-js">';
                     if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>';
                     if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="slidevs.js"></script>';
-                    if (line.indexOf('[## Slidevs ##]') > -1) line = slides;
+                    if (line.indexOf('[## Slidevs ##]') > -1) {
+                        if(slidevs.progressBar) line = '<div class="progress-bar"><div class="progress"></div></div>\n\n' + slides;
+                        else line = slides;
+                    }
                     return line;
                 }))
                 .pipe(es.join('\n'))
@@ -428,11 +433,12 @@ function createSlidevServer(slidevs, startCallback) {
     console.log('\n=> Creating slidevs server'.grey);
 
     var os = require('os'),
-        uris = {
+        address = (os.networkInterfaces().en1 !== undefined ? os.networkInterfaces().en1[1].address : 'http://localhost');
+
+    var uris = {
             slides: '/' + slidevs.trimmedName,
             controls: '/' + slidevs.trimmedName + '/controls'
         },
-        address = (os.networkInterfaces().en1[1].address !== null ? os.networkInterfaces().en1[1].address : 'http://localhost');
         slidevsLinks = {
             slides: address + ':' + slidevs.port + uris.slides,
             controls: address + ':' + slidevs.port + uris.controls

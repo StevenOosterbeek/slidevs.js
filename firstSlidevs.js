@@ -6,6 +6,7 @@ var firstSlidevs = slidevs({
         slidesFolder: '/slides', // default
         styling: 'styling.css', // default
         scriptsFolder: '/scripts', // default
+        progressBar: true, // default
         port: 5000 // default
     });
 

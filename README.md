@@ -13,6 +13,7 @@ var firstSlidevs = slidevs({
         slidesFolder: '/slides', // default
         styling: 'styling.css', // default
         scriptsFolder: '/scripts', // default
+        progressBar: true, // default
         port: 5000 // default
     });
 
@@ -20,6 +21,6 @@ firstSlidevs.start();
 ```
 
 #### Future fixes
-- Compressing styling and scripts
-- Possibility for multiple styling files
+- Concatenation through duplex streams
+- Compressing and cleaning the styling and scripts
 - Adding images within the slides

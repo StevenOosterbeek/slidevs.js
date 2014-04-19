@@ -10,8 +10,12 @@ $(document).ready(function() {
         totalSlides: $('.slidev').length,
         currentSlide: 0,
         isSliding: false,
+        progress: $('.progress'),
         getFrameWidth: function() {
             return $('.slidevs-frame').width();
+        },
+        adjustProgress: function() {
+            this.progress.css({ 'width' : ((100 / this.totalSlides) * (this.currentSlide + 1)) + '%' });
         },
         resize: function() {
             this.strip.css({ 'width' : (this.totalSlides * this.getFrameWidth()) });
@@ -19,6 +23,7 @@ $(document).ready(function() {
                 $(slidevs.slides[slide]).css({ 'width' : slidevs.getFrameWidth() });
             });
             this.strip.css({ 'left' : '-' + (this.currentSlide * this.getFrameWidth()) + 'px' });
+            this.adjustProgress();
         },
         slide: function(direction) {
             if(!this.isSliding) {
@@ -43,6 +48,7 @@ $(document).ready(function() {
                         console.warn('Slidevs does not know in which direction to slide!');
                 }
                 this.strip.css({ 'left' : distance });
+                this.adjustProgress();
                 setTimeout(function() { slidevs.isSliding = false; }, 500); // Wait till the CSS animation is over
             }
         }
