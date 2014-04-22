@@ -25,4 +25,4 @@ firstSlidevs.start();
 - Concatenation through duplex streams
 - Compressing and cleaning the styling and scripts
 - Adding images within the slides
-- Better slide animation
+- Order of loading slidevs/controls

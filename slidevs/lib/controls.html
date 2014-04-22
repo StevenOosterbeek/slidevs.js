@@ -1,0 +1,23 @@
+[## Socket-connection ##]
+
+<span class="left">LEFT</span>
+<span class="right">RIGHT</span>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        if ($('input.socket-connection')) {
+            var socket = io.connect();
+            $('.left').click(function() { socket.emit('slide', 'left'); });
+            $('.right').click(function() { socket.emit('slide', 'right'); });
+
+            socket.on('refresh', function() {
+                location.reload();
+            })
+        }
+
+    });
+
+</script>

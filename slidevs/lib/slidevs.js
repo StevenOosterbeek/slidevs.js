@@ -65,4 +65,11 @@ $(document).ready(function() {
         slidevs.resize();
     });
 
+    if ($('input.socket-connection').length !== 0) {
+        var socket = io.connect($('input.socket-connection').val());
+        socket.on('executeSlide', function(direction) {
+            slidevs.slide(direction);
+        });
+    }
+
 });
