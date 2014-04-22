@@ -1,10 +1,12 @@
 var fs = require('fs'),
+    os = require('os'),
     path = require('path'),
     es = require('event-stream'),
     rimraf = require('rimraf'),
     async = require('async'),
     watch = require('node-watch'),
     express = require('express'),
+    io = require('socket.io'),
     colors = require('colors');
 
 module.exports = slidevs;
@@ -12,18 +14,18 @@ module.exports = slidevs;
 function slidevs(userSettings) {
 
     settings = {
-
         name: userSettings.name ? userSettings.name : 'Slidevs Presentation',
         layout: userSettings.layout ? userSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' : 'main-layout.html',
         slidesFolder: userSettings.slidesFolder ? '/' + userSettings.slidesFolder.toLowerCase().replace(' ', '').replace('/', '') : '/slides',
         styling: userSettings.styling ? userSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
         scriptsFolder: userSettings.scriptsFolder ? userSettings.scriptsFolder.toLowerCase().replace(' ', '') : '/scripts',
+        controls: typeof(userSettings.controls) === 'boolean' ? userSettings.controls : true,
         progressBar: typeof(userSettings.progressBar) === 'boolean' ? userSettings.progressBar : true,
         port: userSettings.port || 5000,
+        address: (os.networkInterfaces().en1 !== undefined ? os.networkInterfaces().en1[1].address : 'http://localhost'),
         thisFolder: path.dirname(module.parent.filename),
         slidevsFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
         running: false
-
     };
 
     return {
@@ -46,8 +48,10 @@ function slidevs(userSettings) {
         slidesFolder: settings.slidesFolder,
         styling: settings.styling,
         scriptsFolder: settings.scriptsFolder,
+        controls: settings.controls,
         progressBar: settings.progressBar,
         port: settings.port,
+        address: settings.address,
 
         // Folders
         thisFolder: settings.thisFolder,
@@ -67,7 +71,7 @@ function startSlidevs(slidevs) {
             buildSlidevs(slidevs, startCallback);
         },
         function(slidevs, startCallback) {
-            if(slidevs.isRunning()) startCallback(null, slidevs, null, true);
+            if (slidevs.isRunning()) startCallback(null, slidevs, null, true);
             else createSlidevServer(slidevs, startCallback);
         },
         function(slidevs, slidevsInfo, alreadyRunning, startCallback) {
@@ -88,15 +92,15 @@ function startSlidevs(slidevs) {
     ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
         else {
-            console.log('\n\nSLIDEVS.JS'.yellow + ' ----------------------------------------------------------------------------\n'.grey);
+            console.log('\n\nSLIDEVS.JS'.yellow + ' ------------------------------------------------------------------------------------\n'.grey);
             if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
             else {
                 console.log('Your slidevs \'' + slidevs.name.bold + '\' has been created and is now up and running!\n');
                 console.log('Slidevs:', slidevLinks.slides.yellow);
-                console.log('Controls:', slidevLinks.controls.yellow);
-                console.log('\n(i) Changes made in the layout, slides, styling or script(s) will rebuild your Slidevs!');
+                if (slidevLinks.controls) console.log('Controls:', slidevLinks.controls.yellow);
+                console.log('\n(i) Saving changes made in the layout, slides, styling or script(s) will rebuild your Slidevs!');
             }
-            console.log('\n---------------------------------------------------------------------------------------\n\n'.grey);
+            console.log('\n-----------------------------------------------------------------------------------------------\n\n'.grey);
         }
 
     });
@@ -274,7 +278,7 @@ function prepareStyling(slidevs, buildCallback) {
 
     async.waterfall([
         function(stylingConcatCallback) {
-            var slidevStyling = path.join(path.dirname(module.filename), '/vendor/slidevs.css');
+            var slidevStyling = path.join(path.dirname(module.filename), '/lib/slidevs.css');
             fs.readFile(slidevStyling, 'utf-8', function(err, data) {
                 if (err) showMessage('getting default slidevs styling', err);
                 else {
@@ -319,41 +323,55 @@ function prepareScripts(slidevs, buildCallback) {
 
     console.log('\nPreparing scripts');
 
-    var slidevScriptFile = path.join(slidevs.slidevsFolder, 'slidevs.js');
+    var slidevScriptFile = path.join(slidevs.slidevsFolder, 'slidevs.js'),
+        addScripts = function(which, slidevs, scriptsConcatCallback) {
 
-    var addScripts = function(which, slidevs, scriptsConcatCallback) {
-        if(which === 'jQuery') {
-            fs.readFile(path.join(path.dirname(module.filename) + '/vendor/jquery-v1.11.0.js'), 'utf-8', function(err, data) {
-                if (err) showMessage('getting jQuery script for concatenation', err);
-                else {
-                    fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
-                        if (err) showMessage('adding jQuery script to temporary slidevs.js file', err);
-                        else scriptsConcatCallback(null, slidevs);
-                    });
-                }
-            });
-        } else {
-            var filesLocation = (which === 'slidevs') ? path.dirname(module.filename) + '/vendor' : path.join(slidevs.thisFolder, slidevs.scriptsFolder);
+            var filesLocation;
+            switch(which) {
+                case 'vendor': filesLocation = path.join(path.dirname(module.filename), 'lib', 'vendor'); break;
+                case 'slidevs': filesLocation = path.join(path.dirname(module.filename), 'lib'); break;
+                case 'user': filesLocation = path.join(slidevs.thisFolder, slidevs.scriptsFolder); break;
+                default: showMessage('adding scripts switch', 'Switch does not recognize which scripts to get!');
+            }
+
             fs.readdir(filesLocation, function(err, scripts) {
                 if (err) showMessage('reading ' + which + ' scripts folder', err);
                 else {
+                    var finalFiles = scripts, removed = 0;
                     scripts.forEach(function(script, index) {
-                        if(script !== '.DS_Store' && script.substr(0, 6) !== 'jquery' && script.substr((script.length - 2), 2) === 'js') {
-                            fs.readFile(path.join(filesLocation, script), 'utf-8', function(err, data) {
-                                if (err) showMessage('getting a ' + which + ' script for concatenation', err);
-                                else {
-                                    fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
-                                        if (err) showMessage('adding ' + which + ' script to temporary slidevs.js file', err);
-                                        if ((index + 1) === scripts.length) scriptsConcatCallback(null, slidevs);
+
+                        // Remove folders first
+                        if (script.split('.').length === 1) {
+                            finalFiles.splice(index, 1);
+                            removed++;
+                        }
+
+                        if ((index + 1) - removed === finalFiles.length) {
+                            console.log('FINALFILES:', finalFiles);
+                            finalFiles.forEach(function(readScript, index) {
+                                console.log('FINAL FILE FOREACH:', readScript);
+                                if (readScript !== '.DS_Store' && readScript.substr((readScript.length - 2), 2) === 'js' && readScript.substr(0, 6) !== 'controls') {
+                                    fs.readFile(path.join(filesLocation, readScript), 'utf-8', function(err, data) {
+                                        if (err) showMessage('getting a ' + which + ' script for concatenation', err);
+                                        else {
+                                            fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
+                                                if (err) showMessage('adding ' + which + ' script to temporary slidevs.js file', err);
+                                                else if ((index + 1) === finalFiles.length) {
+                                                    console.log('DONE!'.green);
+                                                    scriptsConcatCallback(null, slidevs);
+                                                }
+                                            });
+                                        }
                                     });
                                 }
                             });
                         }
+
                     });
                 }
             });
-        }
-    };
+
+        };
 
     async.waterfall([
         function(scriptsConcatCallback) {
@@ -363,7 +381,7 @@ function prepareScripts(slidevs, buildCallback) {
             });
         },
         function(slidevs, scriptsConcatCallback) {
-            addScripts('jQuery', slidevs, scriptsConcatCallback); // Adding jQuery quaranteed on top
+            addScripts('vendor', slidevs, scriptsConcatCallback);
         },
         function(slidevs, scriptsConcatCallback) {
             addScripts('slidevs', slidevs, scriptsConcatCallback);
@@ -400,7 +418,7 @@ function concatSlidevs(slidevs, buildCallback) {
                     line = line[0].trim();
                     if (line.indexOf('t') === 2) line = '<html class="no-js">';
                     if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>';
-                    if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="slidevs.js"></script>';
+                    if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="slidevs.js"></script>\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>';
                     if (line.indexOf('[## Slidevs ##]') > -1) {
                         if(slidevs.progressBar) line = '<div class="progress-bar"><div class="progress"></div></div>\n\n' + slides;
                         else line = slides;
@@ -432,43 +450,43 @@ function createSlidevServer(slidevs, startCallback) {
 
     console.log('\n=> Creating slidevs server'.grey);
 
-    var os = require('os'),
-        address = (os.networkInterfaces().en1 !== undefined ? os.networkInterfaces().en1[1].address : 'http://localhost');
-
-    var uris = {
+    var app = express(),
+        uris = {
             slides: '/' + slidevs.trimmedName,
-            controls: '/' + slidevs.trimmedName + '/controls'
+            controls: false
         },
-        slidevsLinks = {
-            slides: address + ':' + slidevs.port + uris.slides,
-            controls: address + ':' + slidevs.port + uris.controls
+        links = {
+            slides: slidevs.address + ':' + slidevs.port + uris.slides,
+            controls: false
         };
 
-    var app = express(),
-        slidevController = require('./controllers/slidevs-controller'),
-        controlController = require('./controllers/control-controller');
-
     app.use(express.static(slidevs.slidevsFolder));
-    app.set('slidevsFolder', function() {
-        return slidevs.slidevsFolder;
-    }());
 
-    app.get(uris.slides, slidevController.serve);
-    app.get(uris.controls, controlController.serve);
+    app.get(uris.slides, function(req, res) {
+        res.sendfile(slidevs.slidevsFolder + '/slidevs.html');
+    });
 
-    app.listen(slidevs.port);
+    if (slidevs.controls) {
+        uris.controls = '/' + slidevs.trimmedName + '/controls';
+        links.controls = slidevs.address + ':' + slidevs.port + uris.controls;
+        app.get(uris.controls, function(req, res) {
+            res.send('Controls!');
+        });
+    }
+
+    var io = require('socket.io').listen(app.listen(slidevs.port));
 
     slidevs.isNowRunning();
 
     console.log('\n+ Done creating server');
 
-    startCallback(null, slidevs, slidevsLinks, false);
+    startCallback(null, slidevs, links, false);
 
 }
 
 // Global message function
 function showMessage(location, message) {
-    console.log('\n\nSLIDEVS.JS'.red + ' ----------------------------------------------------------------------------\n'.grey);
+    console.log('\n\nSLIDEVS.JS'.red + ' ------------------------------------------------------------------------------------\n'.grey);
     console.log('Something went wrong during '.grey + location.grey + ':\n'.grey + message);
-    console.log('\n---------------------------------------------------------------------------------------\n\n'.grey);
+    console.log('\n-----------------------------------------------------------------------------------------------\n\n'.grey);
 }

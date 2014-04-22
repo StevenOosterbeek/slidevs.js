@@ -11,36 +11,36 @@ $(document).ready(function() {
         currentSlide: 0,
         isSliding: false,
         progress: $('.progress'),
-        getFrameWidth: function() {
-            return $('.slidevs-frame').width();
-        },
         adjustProgress: function() {
             this.progress.css({ 'width' : ((100 / this.totalSlides) * (this.currentSlide + 1)) + '%' });
+        },
+        getFrameWidth: function() {
+            return $('.slidevs-frame').width();
         },
         resize: function() {
             this.strip.css({ 'width' : (this.totalSlides * this.getFrameWidth()) });
             this.slides.each(function(slide) {
-                $(slidevs.slides[slide]).css({ 'width' : slidevs.getFrameWidth() });
+                $(slidevs.slides[slide]).css({ 'width' : slidevs.getFrameWidth(), 'max-width' : slidevs.getFrameWidth() });
             });
             this.strip.css({ 'left' : '-' + (this.currentSlide * this.getFrameWidth()) + 'px' });
             this.adjustProgress();
         },
         slide: function(direction) {
-            if(!this.isSliding) {
-                var distance;
+            if (!this.isSliding) {
+                var distance = parseInt(this.strip.css('left').replace('px', ''), 10);
                 switch(direction) {
                     case 'right':
                         if((this.currentSlide + 1) < this.totalSlides) {
                             this.isSliding = true;
-                            distance = parseInt(this.strip.css('left').replace('px', ''), 10) - this.getFrameWidth();
-                            this.currentSlide = this.currentSlide + 1;
+                            distance -= this.getFrameWidth();
+                            this.currentSlide++;
                         }
                         break;
                     case 'left':
                         if(this.currentSlide > 0) {
                             this.isSliding = true;
-                            distance = parseInt(this.strip.css('left').replace('px', ''), 10) + this.getFrameWidth();
-                            this.currentSlide = this.currentSlide - 1;
+                            distance += this.getFrameWidth();
+                            this.currentSlide--;
                         }
                         break;
                     default:

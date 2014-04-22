@@ -8,11 +8,12 @@ Slidevs.js is an open source presentation framework, based on Node. Create a nic
 var slidevs = require('./slidevs');
 
 var firstSlidevs = slidevs({
-        name: 'Stevens Slidev',
+        name: 'Stevens Slidevs',
         layout: 'main-layout', // default
         slidesFolder: '/slides', // default
         styling: 'styling.css', // default
         scriptsFolder: '/scripts', // default
+        controls: true, // default
         progressBar: true, // default
         port: 5000 // default
     });
@@ -24,3 +25,4 @@ firstSlidevs.start();
 - Concatenation through duplex streams
 - Compressing and cleaning the styling and scripts
 - Adding images within the slides
+- Better slide animation

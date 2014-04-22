@@ -13,14 +13,14 @@ body {
     overflow: hidden;
     top: 0;
     width: 100%;
-    height: .25em;
-    background-color: rgba(255, 255, 255, .5);
+    height: 5px;
+    background-color: rgba(255, 255, 255, .3);
 }
 
 .progress {
     height: 100%;
     overflow: hidden;
-    background-color: rgba(0, 0, 0, .3);
+    background-color: rgba(0, 0, 0, .2);
     -webkit-transition: all ease-out .5s;
     -moz-transition: all ease-out .5s;
     -o-transition: all ease-out .5s;
@@ -53,6 +53,7 @@ body {
     display: inline-block;
     float: left;
     height: 100%;
+    max-height: 100%;
     padding: 0 !important;
     margin: 0 !important;
 }

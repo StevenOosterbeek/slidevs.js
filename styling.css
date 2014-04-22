@@ -1,5 +1,5 @@
 /*
-    You can add your own styling here!
+    You can add your own styling for the slides here!
 */
 
 body {
@@ -23,4 +23,13 @@ p {
     text-align: center;
     color: #888E89;
     text-shadow: rgba(255,255,255,.3) 0 1px 0;
+}
+
+/* You can overwrite the colours of the progress bar as you wish */
+.progress-bar {
+    /**/
+}
+
+.progress {
+    /**/
 }
