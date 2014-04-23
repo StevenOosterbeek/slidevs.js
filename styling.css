@@ -12,7 +12,7 @@ h1 {
     margin: 2em auto 0;
     text-align: center;
     color: white;
-    text-shadow: rgba(0,0,0,.2) 0 2px 0;
+    text-shadow: rgba(0,0,0,.3) 0 2px 0;
 }
 
 p {
@@ -21,8 +21,8 @@ p {
     margin: 2em auto 0;
     font-size: 1.5em;
     text-align: center;
-    color: #888E89;
-    text-shadow: rgba(255,255,255,.3) 0 1px 0;
+    color: white;
+    text-shadow: rgba(0 ,0 ,0 ,.3) 0 1px 0;
 }
 
 /* You can overwrite the colours of the progress bar as you wish */
