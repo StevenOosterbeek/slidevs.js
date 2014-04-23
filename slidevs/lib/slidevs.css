@@ -139,6 +139,20 @@ body.controls {
     padding: 1em 0;
 }
 
+.orientation-warning {
+    display: none;
+    font-size: .7em;
+    width: 23em;
+    margin: 1em auto .5em;
+    padding: .6em 0;
+    background-color: rgba(216, 59, 59, .9);
+    text-shadow: rgba(0, 0, 0, .3) 0 1px 0;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
 .close {
     position: fixed;
     z-index: 1000;
@@ -194,6 +208,14 @@ body.controls {
 
     .note-tap {
         display: none;
+    }
+
+}
+
+@media screen and (orientation:portrait) {
+
+    .orientation-warning {
+        display: block;
     }
 
 }

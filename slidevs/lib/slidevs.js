@@ -11,6 +11,7 @@ $(document).ready(function() {
         currentSlide: 0,
         isSliding: false,
         progress: $('.progress'),
+        notes: [],
         adjustProgress: function() {
             this.progress.css({ 'width' : ((100 / this.totalSlides) * (this.currentSlide + 1)) + '%' });
         },
@@ -59,7 +60,29 @@ $(document).ready(function() {
             }
         },
         openNote: function() {
+
             $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'opacity' : '1', 'height' : '100%' });
+
+            setTimeout(function() {
+
+                var canvasWrapper = $($('.note-canvas')[slidevs.currentSlide]),
+                    canvas = document.createElement('canvas');
+
+                    canvas.setAttribute('class', 'note');
+                    canvas.setAttribute('width', canvasWrapper.width());
+                    canvas.setAttribute('height', canvasWrapper.height());
+                    canvasWrapper.append(canvas);
+                    if (typeof(G_vmlCanvasManager) !== 'undefined') canvas = G_vmlCanvasManager.initElement(canvas);
+
+                var context = canvas.getContext('2d');
+                    context.strokeStyle = '#4F4F4F';
+                    context.lineJoin = 'round';
+                    context.lineWidth = 4;
+
+                if (!slidevs.notes[slidevs.currentSlide]) slidevs.notes[slidevs.currentSlide] = context;
+
+            }, 500);
+
         },
         closeNote: function() {
             $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'opacity' : '0', 'height' : '0' });
@@ -82,6 +105,10 @@ $(document).ready(function() {
 
         var socket = io.connect($('input.socket-connection').val());
 
+        socket.on('askTotalSlides', function() {
+            socket.emit('totalSlides', slidevs.totalSlides);
+        });
+
         socket.on('executeSlide', function(direction) {
             slidevs.slide(direction);
             socket.emit('updateSlideNumber', {
@@ -91,12 +118,28 @@ $(document).ready(function() {
             });
         });
 
+        // Notes
         socket.on('openNote', function() {
             slidevs.openNote();
         });
 
         socket.on('closeNote', function() {
             slidevs.closeNote();
+        });
+
+        socket.on('draw', function(coors) {
+
+            var context = slidevs.notes[slidevs.currentSlide];
+            if (coors.action === 'start') {
+                context.moveTo(coors.x, coors.y);
+                context.stroke();
+            } else if (coors.action === 'move') {
+                context.lineTo(coors.x, coors.y);
+                context.stroke();
+            } else {
+                console.warn('Action of drawing is incorrect!');
+            }
+
         });
 
         socket.on('refresh', function() {

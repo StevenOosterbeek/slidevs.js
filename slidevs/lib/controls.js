@@ -29,6 +29,7 @@ exports = module.exports = function(uris, slidevs) {
 
         controlSocket.sockets.on('connection', function(csocket) {
 
+            // Controls
             csocket.on('slide', function(direction) {
                 ssocket.emit('executeSlide', direction);
             });
@@ -41,11 +42,22 @@ exports = module.exports = function(uris, slidevs) {
                 ssocket.emit('closeNote');
             });
 
+            csocket.on('draw', function(coors) {
+                ssocket.emit('draw', coors);
+            });
+
+            // Slidev
+            ssocket.emit('askTotalSlides');
+
+            ssocket.on('totalSlides', function(totalSlides) {
+                csocket.emit('totalSlides', totalSlides);
+            });
+
             ssocket.on('updateSlideNumber', function(slideUpdate) {
                 csocket.emit('updateSlideNumber', slideUpdate);
             });
 
-            // Disconnecting
+            // Refresh on disconnect
             csocket.on('disconnect', function() {
                 ssocket.emit('refresh');
             });

@@ -27,6 +27,7 @@
 
         <div class="note-tap">
             Tap here to open up the canvas, in order to add notes to this slide.
+            <div class="orientation-warning">Drawing notes should be done in landscape!</div>
         </div>
 
         <div class="controls-wrapper">
@@ -44,71 +45,93 @@
                     var socket = io.connect($('input.socket-connection').val()),
                         left = $('.left'),
                         right = $('.right'),
+                        slideNumber = $('.slide-number'),
                         tapToNote = $('.note-tap'),
-                        closeNote = $('.close');
+                        closeNote = $('.close')
+                        totalSlides = 0;
 
                     left.click(function() { socket.emit('slide', 'left'); });
                     right.click(function() { socket.emit('slide', 'right'); });
 
+                    socket.on('totalSlides', function(ts) {
+                        totalSlides = ts;
+                        slideNumber.empty().append('1/' + totalSlides);
+                    });
+
                     socket.on('updateSlideNumber', function(slideUpdate) {
-                        $('.slide-number').empty().append(slideUpdate.number);
+                        slideNumber.empty().append(slideUpdate.number + '/' + totalSlides);
                         if(slideUpdate.first) left.css({ 'opacity' : '.6' }); else left.css({ 'opacity' : '1' });
                         if(slideUpdate.last) right.css({ 'opacity' : '.6' }); else right.css({ 'opacity' : '1' });
                     });
 
                     tapToNote.click(function() {
 
-                        socket.emit('openNote');
-                        $('.note-canvas').css({ 'opacity' : '1', 'height' : '100%' });
-                        $('.close').css({ 'opacity' : '1' });
+                        // Only allow drawing in landscape mode
+                        if($('.orientation-warning').css('display') === 'none') {
 
-                        // Create canvas drawing after opened note
-                        setTimeout(function() {
+                            socket.emit('openNote');
+                            $('.note-canvas').css({ 'opacity' : '1', 'height' : '100%' });
+                            $('.close').css({ 'opacity' : '1' });
 
-                            var canvas = document.createElement('canvas');
-                                canvas.setAttribute('class', 'note');
-                                canvas.setAttribute('width', $('.note-canvas').width());
-                                canvas.setAttribute('height', $('.note-canvas').height());
-                                $('.note-canvas').append(canvas);
-                                if (typeof(G_vmlCanvasManager) !== 'undefined') canvas = G_vmlCanvasManager.initElement(canvas);
+                            setTimeout(function() {
 
-                            var note = {
-                                draw: {
-                                    isDrawing: false,
-                                    start: function(event) {
-                                        context.beginPath();
-                                        context.moveTo(
-                                            event.targetTouches[0].pageX,
-                                            event.targetTouches[0].pageY
-                                        );
-                                        this.isDrawing = true;
-                                    },
-                                    move: function(event) {
-                                        if (this.isDrawing) {
-                                            context.lineTo(
-                                                event.targetTouches[0].pageX,
-                                                event.targetTouches[0].pageY
-                                            );
-                                            context.stroke();
+                                var canvas = document.createElement('canvas');
+                                    canvas.setAttribute('class', 'note');
+                                    canvas.setAttribute('width', $('.note-canvas').width());
+                                    canvas.setAttribute('height', $('.note-canvas').height());
+                                    $('.note-canvas').append(canvas);
+                                    if (typeof(G_vmlCanvasManager) !== 'undefined') canvas = G_vmlCanvasManager.initElement(canvas);
+
+                                var note = {
+                                    draw: {
+                                        isDrawing: false,
+                                        start: function(x, y) {
+                                            context.beginPath();
+                                            context.moveTo(x, y);
+                                            this.isDrawing = true;
+                                        },
+                                        move: function(x, y) {
+                                            if (this.isDrawing) {
+                                                context.lineTo(x, y);
+                                                context.stroke();
+                                            }
+                                        },
+                                        end: function() {
+                                            this.isDrawing = false;
                                         }
-                                    },
-                                    end: function(event) {
-                                        this.isDrawing = false;
                                     }
-                                }
+                                };
 
-                            };
+                                var context = canvas.getContext('2d');
+                                    context.strokeStyle = '#4F4F4F';
+                                    context.lineJoin = 'round';
+                                    context.lineWidth = 4;
 
-                            var context = canvas.getContext('2d');
-                                context.strokeStyle = '#4F4F4F';
-                                context.lineJoin = 'round';
-                                context.lineWidth = 4;
+                                canvas.addEventListener('touchstart', function(event) {
 
-                            canvas.addEventListener('touchstart', note.draw.start, false);
-                            canvas.addEventListener('touchmove', note.draw.move, false);
-                            canvas.addEventListener('touchend', note.draw.end, false);
+                                    var x = event.targetTouches[0].pageX,
+                                        y = event.targetTouches[0].pageY;
 
-                        }, 500);
+                                    socket.emit('draw', { action: 'start', x: x, y: y });
+                                    note.draw.start(x, y);
+
+                                }, false);
+
+                                canvas.addEventListener('touchmove', function(event) {
+
+                                    var x = event.targetTouches[0].pageX,
+                                        y = event.targetTouches[0].pageY;
+
+                                    socket.emit('draw', { action: 'move', x: x, y: y });
+                                    note.draw.move(x, y);
+
+                                }, false);
+
+                                canvas.addEventListener('touchend', note.draw.end, false);
+
+                            }, 500);
+
+                        }
 
                     });
 
@@ -118,7 +141,9 @@
                         $('.close').css({ 'opacity' : '0' });
                     });
 
-                    document.body.addEventListener('touchmove',function(event) { event.preventDefault(); }, false);
+                    document.body.addEventListener('touchmove',function(event) {
+                        event.preventDefault(); },
+                    false);
 
                     socket.on('refresh', function() {
                         location.reload(true);
