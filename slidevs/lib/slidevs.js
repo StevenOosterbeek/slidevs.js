@@ -61,7 +61,7 @@ $(document).ready(function() {
         },
         openNote: function() {
 
-            $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'opacity' : '1', 'height' : '100%' });
+            $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'height' : '100%' });
 
             setTimeout(function() {
 
@@ -85,7 +85,7 @@ $(document).ready(function() {
 
         },
         closeNote: function() {
-            $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'opacity' : '0', 'height' : '0' });
+            $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'height' : '0' });
         }
     };
 
@@ -140,6 +140,12 @@ $(document).ready(function() {
                 console.warn('Action of drawing is incorrect!');
             }
 
+        });
+
+        socket.on('erase', function() {
+            var context = slidevs.notes[slidevs.currentSlide];
+                context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+                context.beginPath();
         });
 
         socket.on('refresh', function() {

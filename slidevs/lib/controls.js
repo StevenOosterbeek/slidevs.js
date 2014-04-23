@@ -46,6 +46,10 @@ exports = module.exports = function(uris, slidevs) {
                 ssocket.emit('draw', coors);
             });
 
+            csocket.on('erase', function() {
+                ssocket.emit('erase');
+            });
+
             // Slidev
             ssocket.emit('askTotalSlides');
 
