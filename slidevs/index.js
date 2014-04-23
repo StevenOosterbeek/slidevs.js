@@ -245,7 +245,7 @@ function prepareSlides(slidevs, buildCallback) {
                             slideFile
                                 .pipe(es.through(function(s) {
                                     var slide = s.toString(),
-                                    resultSlide = '\n<div class="slidev">\n' + slide;
+                                    resultSlide = '\n<div class="slidev">\n<div class="note-canvas"></div>\n' + slide;
                                     this.emit('data', resultSlide);
                                 }, function() {
                                     this.emit('data', '\n</div>');

@@ -58,6 +58,29 @@ body {
     margin: 0 !important;
 }
 
+.note-canvas {
+    position: fixed;
+    z-index: 1000;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    opacity: 0;
+    background-color: #FCFCFC;
+    border-bottom: 2px solid #E4E4E4;
+    -webkit-transition: all ease-out .5s;
+    -moz-transition: all ease-out .5s;
+    -o-transition: all ease-out .5s;
+    transition: all ease-out .5s;
+}
+
+.note {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
 /* Controls */
 body.controls {
     font: 1em/1.5em 'Helvetica', sans-serif;
@@ -70,7 +93,6 @@ body.controls {
     color: white;
     text-align: center;
     text-shadow: rgba(0, 0, 0, .3) 0 1px 0;
-
     border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
@@ -115,6 +137,47 @@ body.controls {
     width: 35em;
     margin: 25% auto 0;
     padding: 1em 0;
+}
+
+.close {
+    position: fixed;
+    z-index: 1000;
+    right: 2em;
+    bottom: 2em;
+    width: 2.8em;
+    height: 2.8em;
+    opacity: 0;
+    -webkit-transition: all ease-out .8s;
+    -moz-transition: all ease-out .8s;
+    -o-transition: all ease-out .8s;
+    transition: all ease-out .8s;
+}
+
+.close-stripe {
+    position: absolute;
+    width: .6em;
+    height: 3em;
+    margin-left: 1em;
+    background-color: #D83B3B;
+    border-radius: 2px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    border-bottom: 2px solid rgba(0, 0, 0, .2);
+}
+
+.close-stripe.left-right {
+    transform:rotate(45deg);
+    -ms-transform:rotate(45deg);
+    -webkit-transform:rotate(45deg);
+    border-right: 2px solid rgba(0, 0, 0, .2);
+}
+
+.close-stripe.right-left {
+    transform:rotate(-45deg);
+    -ms-transform:rotate(-45deg);
+    -webkit-transform:rotate(-45deg);
+    border-left: 2px solid rgba(0, 0, 0, .2);
 }
 
 @media only screen and (max-device-width : 765px) {

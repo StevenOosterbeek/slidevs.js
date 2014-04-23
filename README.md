@@ -22,8 +22,5 @@ firstSlidevs.start();
 ```
 
 #### Future fixes
-- Concatenation through duplex streams
 - Compressing and cleaning the styling and scripts
 - Adding images within the slides
-- Order of loading slidevs/controls
-- Adding things dynamically to controls.html

@@ -57,6 +57,12 @@ $(document).ready(function() {
                 this.adjustProgress();
                 setTimeout(function() { slidevs.isSliding = false; }, 500); // Wait till the CSS animation is over
             }
+        },
+        openNote: function() {
+            $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'opacity' : '1', 'height' : '100%' });
+        },
+        closeNote: function() {
+            $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'opacity' : '0', 'height' : '0' });
         }
     };
 
@@ -71,6 +77,7 @@ $(document).ready(function() {
         slidevs.resize();
     });
 
+    // Socket
     if ($('input.socket-connection').length !== 0) {
 
         var socket = io.connect($('input.socket-connection').val());
@@ -82,6 +89,14 @@ $(document).ready(function() {
                 first: slidevs.isFirstSlide(),
                 last: slidevs.isLastSlide()
             });
+        });
+
+        socket.on('openNote', function() {
+            slidevs.openNote();
+        });
+
+        socket.on('closeNote', function() {
+            slidevs.closeNote();
         });
 
         socket.on('refresh', function() {

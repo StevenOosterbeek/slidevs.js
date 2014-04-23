@@ -18,6 +18,13 @@
 
         [## Socket-connection ##]
 
+        <div class="note-canvas">
+            <div class="close">
+                <div class="close-stripe left-right"></div>
+                <div class="close-stripe right-left"></div>
+            </div>
+        </div>
+
         <div class="note-tap">
             Tap here to open up the canvas, in order to add notes to this slide.
         </div>
@@ -36,7 +43,9 @@
 
                     var socket = io.connect($('input.socket-connection').val()),
                         left = $('.left'),
-                        right = $('.right');
+                        right = $('.right'),
+                        tapToNote = $('.note-tap'),
+                        closeNote = $('.close');
 
                     left.click(function() { socket.emit('slide', 'left'); });
                     right.click(function() { socket.emit('slide', 'right'); });
@@ -46,6 +55,70 @@
                         if(slideUpdate.first) left.css({ 'opacity' : '.6' }); else left.css({ 'opacity' : '1' });
                         if(slideUpdate.last) right.css({ 'opacity' : '.6' }); else right.css({ 'opacity' : '1' });
                     });
+
+                    tapToNote.click(function() {
+
+                        socket.emit('openNote');
+                        $('.note-canvas').css({ 'opacity' : '1', 'height' : '100%' });
+                        $('.close').css({ 'opacity' : '1' });
+
+                        // Create canvas drawing after opened note
+                        setTimeout(function() {
+
+                            var canvas = document.createElement('canvas');
+                                canvas.setAttribute('class', 'note');
+                                canvas.setAttribute('width', $('.note-canvas').width());
+                                canvas.setAttribute('height', $('.note-canvas').height());
+                                $('.note-canvas').append(canvas);
+                                if (typeof(G_vmlCanvasManager) !== 'undefined') canvas = G_vmlCanvasManager.initElement(canvas);
+
+                            var note = {
+                                draw: {
+                                    isDrawing: false,
+                                    start: function(event) {
+                                        context.beginPath();
+                                        context.moveTo(
+                                            event.targetTouches[0].pageX,
+                                            event.targetTouches[0].pageY
+                                        );
+                                        this.isDrawing = true;
+                                    },
+                                    move: function(event) {
+                                        if (this.isDrawing) {
+                                            context.lineTo(
+                                                event.targetTouches[0].pageX,
+                                                event.targetTouches[0].pageY
+                                            );
+                                            context.stroke();
+                                        }
+                                    },
+                                    end: function(event) {
+                                        this.isDrawing = false;
+                                    }
+                                }
+
+                            };
+
+                            var context = canvas.getContext('2d');
+                                context.strokeStyle = '#4F4F4F';
+                                context.lineJoin = 'round';
+                                context.lineWidth = 4;
+
+                            canvas.addEventListener('touchstart', note.draw.start, false);
+                            canvas.addEventListener('touchmove', note.draw.move, false);
+                            canvas.addEventListener('touchend', note.draw.end, false);
+
+                        }, 500);
+
+                    });
+
+                    closeNote.click(function() {
+                        socket.emit('closeNote');
+                        $('.note-canvas').css({ 'opacity' : '0', 'height' : '0' });
+                        $('.close').css({ 'opacity' : '0' });
+                    });
+
+                    document.body.addEventListener('touchmove',function(event) { event.preventDefault(); }, false);
 
                     socket.on('refresh', function() {
                         location.reload(true);

@@ -33,6 +33,14 @@ exports = module.exports = function(uris, slidevs) {
                 ssocket.emit('executeSlide', direction);
             });
 
+            csocket.on('openNote', function() {
+                ssocket.emit('openNote');
+            });
+
+            csocket.on('closeNote', function() {
+                ssocket.emit('closeNote');
+            });
+
             ssocket.on('updateSlideNumber', function(slideUpdate) {
                 csocket.emit('updateSlideNumber', slideUpdate);
             });
