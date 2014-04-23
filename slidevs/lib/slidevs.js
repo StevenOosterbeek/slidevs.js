@@ -25,19 +25,25 @@ $(document).ready(function() {
             this.strip.css({ 'left' : '-' + (this.currentSlide * this.getFrameWidth()) + 'px' });
             this.adjustProgress();
         },
+        isLastSlide: function() {
+            return ((this.currentSlide + 2) > this.totalSlides);
+        },
+        isFirstSlide: function() {
+            return (this.currentSlide < 1);
+        },
         slide: function(direction) {
             if (!this.isSliding) {
                 var distance = parseInt(this.strip.css('left').replace('px', ''), 10);
                 switch(direction) {
                     case 'right':
-                        if((this.currentSlide + 1) < this.totalSlides) {
+                        if(!this.isLastSlide()) {
                             this.isSliding = true;
                             distance -= this.getFrameWidth();
                             this.currentSlide++;
                         }
                         break;
                     case 'left':
-                        if(this.currentSlide > 0) {
+                        if(!this.isFirstSlide()) {
                             this.isSliding = true;
                             distance += this.getFrameWidth();
                             this.currentSlide--;
@@ -66,10 +72,22 @@ $(document).ready(function() {
     });
 
     if ($('input.socket-connection').length !== 0) {
+
         var socket = io.connect($('input.socket-connection').val());
+
         socket.on('executeSlide', function(direction) {
             slidevs.slide(direction);
+            socket.emit('updateSlideNumber', {
+                number: (slidevs.currentSlide + 1),
+                first: slidevs.isFirstSlide(),
+                last: slidevs.isLastSlide()
+            });
         });
+
+        socket.on('refresh', function() {
+            location.reload(true);
+        });
+
     }
 
 });

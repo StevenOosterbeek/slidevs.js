@@ -1,23 +1,61 @@
-[## Socket-connection ##]
+<!doctype html>
+<html>
+    <head>
 
-<span class="left">LEFT</span>
-<span class="right">RIGHT</span>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-<script type="text/javascript">
+        [## Title ##]
 
-    $(document).ready(function() {
+        <meta name="description" content="Slidevs Controls - Control your Slidevs right from your mobile device">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
 
-        if ($('input.socket-connection')) {
-            var socket = io.connect();
-            $('.left').click(function() { socket.emit('slide', 'left'); });
-            $('.right').click(function() { socket.emit('slide', 'right'); });
+        [## Assets ##]
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 
-            socket.on('refresh', function() {
-                location.reload();
-            })
-        }
+    </head>
+    <body class="controls">
 
-    });
+        [## Socket-connection ##]
 
-</script>
+        <div class="note-tap">
+            Tap here to open up the canvas, in order to add notes to this slide.
+        </div>
+
+        <div class="controls-wrapper">
+            <div class="control right">Next</div>
+            <div class="control left" style="opacity:.6;">Previous</div>
+            <div class="current"> Current slide: <span class="slide-number">1</span> </div>
+        </div>
+
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+
+                if ($('input.socket-connection').length !== 0) {
+
+                    var socket = io.connect($('input.socket-connection').val()),
+                        left = $('.left'),
+                        right = $('.right');
+
+                    left.click(function() { socket.emit('slide', 'left'); });
+                    right.click(function() { socket.emit('slide', 'right'); });
+
+                    socket.on('updateSlideNumber', function(slideUpdate) {
+                        $('.slide-number').empty().append(slideUpdate.number);
+                        if(slideUpdate.first) left.css({ 'opacity' : '.6' }); else left.css({ 'opacity' : '1' });
+                        if(slideUpdate.last) right.css({ 'opacity' : '.6' }); else right.css({ 'opacity' : '1' });
+                    });
+
+                    socket.on('refresh', function() {
+                        location.reload(true);
+                    });
+
+                }
+
+            });
+
+        </script>
+
+    </body>
+</html>

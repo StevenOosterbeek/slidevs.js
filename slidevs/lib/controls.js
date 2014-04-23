@@ -7,8 +7,8 @@ exports = module.exports = function(uris, slidevs) {
         controlServer = express();
 
     var servers = [
-        { name: 'slides', server: slidevServer, socket: null },
-        { name: 'controls', server: controlServer, socket: null }
+        { name: 'slides', server: slidevServer },
+        { name: 'controls', server: controlServer }
     ];
 
     servers.forEach(function(serverObject) {
@@ -22,21 +22,34 @@ exports = module.exports = function(uris, slidevs) {
         });
     });
 
-    var controlsIO = require('socket.io').listen(controlServer.listen(slidevs.socketPort)).set('log level', 0),
-        slidevsIO = require('socket.io').listen(slidevServer.listen(slidevs.port)).set('log level', 0);
+    var controlSocket = socketio.listen(controlServer.listen(slidevs.socketPort)).set('log level', 0),
+        slidevSocket = socketio.listen(slidevServer.listen(slidevs.port)).set('log level', 0);
 
-    // Controls > slidevs
-    controlsIO.sockets.on('connection', function(socket) {
-        var controlSocket = servers[1].socket = socket,
-            slidevSocket = servers[0].socket;
-        socket.on('slide', function(direction) {
-            if(slidevSocket !== null) slidevSocket.emit('executeSlide', direction);
+    slidevSocket.sockets.on('connection', function(ssocket) {
+
+        controlSocket.sockets.on('connection', function(csocket) {
+
+            csocket.on('slide', function(direction) {
+                ssocket.emit('executeSlide', direction);
+            });
+
+            ssocket.on('updateSlideNumber', function(slideUpdate) {
+                csocket.emit('updateSlideNumber', slideUpdate);
+            });
+
+            // Disconnecting
+            csocket.on('disconnect', function() {
+                ssocket.emit('refresh');
+            });
+
+            ssocket.on('disconnect', function() {
+                csocket.emit('refresh');
+            });
+
         });
-    });
 
-    // Slidevs > controls
-    slidevsIO.sockets.on('connection', function(socket) {
-        servers[0].socket = socket;
+        slidevs.isNowRunning();
+
     });
 
 };

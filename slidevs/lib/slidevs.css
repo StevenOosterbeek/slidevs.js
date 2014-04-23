@@ -57,3 +57,80 @@ body {
     padding: 0 !important;
     margin: 0 !important;
 }
+
+/* Controls */
+body.controls {
+    font: 1em/1.5em 'Helvetica', sans-serif;
+    background-image: url('http://www.stevenoosterbeek.nl/slidevs/slidevs-bg.svg');
+    background-color: #474843;
+}
+
+.controls-wrapper, .control, .current, .note-tap {
+    overflow: hidden;
+    color: white;
+    text-align: center;
+    text-shadow: rgba(0, 0, 0, .3) 0 1px 0;
+
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.controls-wrapper, .current, .note-tap {
+    background-color: rgba(0, 0, 0, .2);
+    border: 1px solid rgba(255, 255, 255, .1);
+}
+
+.controls-wrapper {
+    position: fixed;
+    right: 3em;
+    bottom: 3em;
+    width: 10em;
+    padding: 1em;
+}
+
+.control {
+    width: 100%;
+    padding: .8em 0;
+    margin-bottom: 1em;
+
+    font-weight: bolder;
+    background-color: #D83B3B;
+    text-transform: uppercase;
+    border-bottom: 4px solid rgba(0, 0, 0, .2);
+
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
+}
+
+.current {
+    width: 84%;
+    padding: .8em;
+}
+
+.note-tap {
+    width: 35em;
+    margin: 25% auto 0;
+    padding: 1em 0;
+}
+
+@media only screen and (max-device-width : 765px) {
+
+    .controls-wrapper {
+        position: static;
+        margin: 5em auto 0;
+        width: 80%;
+    }
+
+    .current {
+        width: 91%;
+    }
+
+    .note-tap {
+        display: none;
+    }
+
+}

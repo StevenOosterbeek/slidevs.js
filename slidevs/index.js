@@ -6,7 +6,6 @@ var fs = require('fs'),
     async = require('async'),
     watch = require('node-watch'),
     express = require('express'),
-    io = require('socket.io'),
     colors = require('colors');
 
 module.exports = slidevs;
@@ -62,7 +61,6 @@ function slidevs(userSettings) {
 
 }
 
-// Start slidevs
 function startSlidevs(slidevs) {
 
     console.log('\n# Starting slidevs'.yellow);
@@ -108,7 +106,6 @@ function startSlidevs(slidevs) {
 
 }
 
-// Build slidevs
 function buildSlidevs(slidevs, startCallback) {
 
     console.log('\n=> Starting build'.grey);
@@ -142,7 +139,6 @@ function buildSlidevs(slidevs, startCallback) {
 
 }
 
-// Manage hidden slidevs folder
 function checkSlidevsFolder(slidevs, buildCallback) {
 
     console.log('\nChecking folder');
@@ -168,7 +164,6 @@ function checkSlidevsFolder(slidevs, buildCallback) {
 
 }
 
-// Concatenating slides
 function prepareSlides(slidevs, buildCallback) {
 
     console.log('\nPreparing slides');
@@ -197,14 +192,14 @@ function prepareSlides(slidevs, buildCallback) {
 
                             async.waterfall([
 
-                                // Append first part of slider elements
+                                // First part of slider elements
                                 function(slideConcatCallback) {
                                     fs.appendFile(slidesFile, '<div class="slidevs-frame">\n<div class="slidevs-strip">\n', function(err) {
                                         if (err) showMessage('appending the first elements of the slides container', err);
                                         else slideConcatCallback();
                                     });
                                 },
-                                // Append slides
+                                // Slides
                                 function(slideConcatCallback) {
                                     slides.forEach(function(slide, index) {
                                         fs.readFile(path.join(tmpSlidesFolder, slide), 'utf-8', function(err, data) {
@@ -223,7 +218,7 @@ function prepareSlides(slidevs, buildCallback) {
                                         });
                                     });
                                 },
-                                // Append last part of slider elements
+                                // Last part of slider elements
                                 function(slideConcatCallback) {
                                     fs.appendFile(slidesFile, '\n</div>\n</div>', function(err) {
                                         if (err) showMessage('appending the last elements the slides container', err);
@@ -249,8 +244,8 @@ function prepareSlides(slidevs, buildCallback) {
 
                             slideFile
                                 .pipe(es.through(function(s) {
-                                    var slide = s.toString();
-                                    var resultSlide = '\n<div class="slidev">\n' + slide;
+                                    var slide = s.toString(),
+                                    resultSlide = '\n<div class="slidev">\n' + slide;
                                     this.emit('data', resultSlide);
                                 }, function() {
                                     this.emit('data', '\n</div>');
@@ -273,7 +268,6 @@ function prepareSlides(slidevs, buildCallback) {
     });
 }
 
-// Concatenating styling
 function prepareStyling(slidevs, buildCallback) {
 
     console.log('\nPreparing styling');
@@ -322,7 +316,6 @@ function prepareStyling(slidevs, buildCallback) {
 
 }
 
-// Concatenating styling
 function prepareScripts(slidevs, buildCallback) {
 
     console.log('\nPreparing scripts');
@@ -343,13 +336,11 @@ function prepareScripts(slidevs, buildCallback) {
                 else {
                     var finalFiles = scripts, removed = 0;
                     scripts.forEach(function(script, index) {
-
                         // Remove folders first
                         if (script.split('.').length === 1) {
                             finalFiles.splice(index, 1);
                             removed++;
                         }
-
                         if ((index + 1) - removed === finalFiles.length) {
                             finalFiles.forEach(function(readScript, index) {
                                 if (readScript !== '.DS_Store' && readScript.substr((readScript.length - 2), 2) === 'js' && readScript.substr(0, 8) !== 'controls') {
@@ -367,7 +358,6 @@ function prepareScripts(slidevs, buildCallback) {
                                 }
                             });
                         }
-
                     });
                 }
             });
@@ -400,7 +390,6 @@ function prepareScripts(slidevs, buildCallback) {
 
 }
 
-// Create slidevs presentation
 function concatSlidevs(slidevs, buildCallback) {
 
     console.log('\nConcatenating presentation');
@@ -451,7 +440,6 @@ function concatSlidevs(slidevs, buildCallback) {
 
 }
 
-// Check if control file is necessary
 function checkControls(slidevs, buildCallback) {
 
     if(slidevs.controls) {
@@ -464,7 +452,9 @@ function checkControls(slidevs, buildCallback) {
                 .pipe(es.mapSync(function(line) { return line.split('\t'); }))
                 .pipe(es.mapSync(function(line) {
                     line = line[0].trim();
-                    if (line.indexOf('[## Socket-connection ##]') > -1) line = '<input type="hidden" name="socket-connection" name="socket-connection" value="' + slidevs.address + ':' + slidevs.socketPort + '" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>';
+                    if (line.indexOf('[## Title ##]') > -1) line = '<title>' + slidevs.name + ' - Controls</title>';
+                    if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>';
+                    if (line.indexOf('[## Socket-connection ##]') > -1) line = '<input type="hidden" name="socket-connection" class="socket-connection" value="' + slidevs.address + ':' + slidevs.socketPort + '" />';
                     return line;
                 }))
                 .pipe(es.join('\n'))
@@ -481,7 +471,6 @@ function checkControls(slidevs, buildCallback) {
 
 }
 
-// Create server
 function createSlidevServer(slidevs, startCallback) {
 
     console.log('\n=> Creating slidevs server'.grey);
@@ -497,18 +486,23 @@ function createSlidevServer(slidevs, startCallback) {
 
     if (!slidevs.controls) {
 
+        // Slidevs only
         var app = express();
         app.use(express.static(slidevs.slidevsFolder));
         app.get(uris.slides, function(req, res) {
             res.sendfile(slidevs.slidevsFolder + '/slidevs.html');
         });
         app.listen(slidevs.port);
+        slidevs.isNowRunning();
 
-    } else require('./lib/controls')(uris, slidevs);
+    } else {
+
+        // Slidevs including controls
+        require('./lib/controls')(uris, slidevs);
+    }
 
     console.log('\n+ Done creating server');
 
-    slidevs.isNowRunning();
     startCallback(null, slidevs, links, false);
 
 }
