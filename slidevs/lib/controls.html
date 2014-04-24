@@ -88,7 +88,7 @@
                         slides.update(true, false);
                         connection.css({ 'background-color' : '#1DC64F', 'border-color' : '#19A743' });
                         connection.text('Connected!');
-                        setTimeout(function() { connection.css({ 'opacity' : '0' }); }, 800);
+                        setTimeout(function() { connection.css({ 'opacity' : '0' }); }, 1000);
                     });
 
                     socket.on('updateSlideNumber', function(slide) {

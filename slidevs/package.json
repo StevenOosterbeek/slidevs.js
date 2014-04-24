@@ -30,6 +30,9 @@
     "rimraf": "~2.2.6",
     "express": "~4.0.0",
     "node-watch": "~0.3.4",
-    "socket.io": "~0.9.16"
+    "socket.io": "~0.9.16",
+    "gulp": "~3.6.2",
+    "gulp-uglify": "~0.2.1",
+    "gulp-minify-css": "~0.3.1"
   }
 }

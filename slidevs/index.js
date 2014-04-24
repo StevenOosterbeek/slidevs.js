@@ -6,6 +6,9 @@ var fs = require('fs'),
     async = require('async'),
     watch = require('node-watch'),
     express = require('express'),
+    gulp = require('gulp'),
+    minify = require('gulp-minify-css'),
+    uglify = require('gulp-uglify'),
     colors = require('colors');
 
 module.exports = slidevs;
@@ -273,7 +276,6 @@ function prepareStyling(slidevs, buildCallback) {
     console.log('\nPreparing styling');
 
     var styling = path.join(slidevs.slidevsFolder, 'slidevstyling.css');
-
     async.waterfall([
         function(stylingConcatCallback) {
             var slidevStyling = path.join(path.dirname(module.filename), '/lib/slidevs.css');
@@ -309,8 +311,19 @@ function prepareStyling(slidevs, buildCallback) {
     ], function(err, slidevs) {
         if (err) showMessage('styling async', err);
         else {
-            console.log('+ Concatenating styling done');
-            buildCallback(null, slidevs);
+
+            // Minify styling
+            gulp.src(styling)
+                .pipe(minify())
+                .pipe(gulp.dest(slidevs.slidevsFolder))
+                .on('error', function(err) {
+                    showMessage('minifying styling', err);
+                })
+                .on('end', function() {
+                    console.log('+ Concatenating styling done');
+                    buildCallback(null, slidevs);
+                });
+
         }
     });
 
@@ -349,9 +362,7 @@ function prepareScripts(slidevs, buildCallback) {
                                         else {
                                             fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
                                                 if (err) showMessage('adding ' + which + ' script to temporary slidevs.js file', err);
-                                                else if ((index + 1) === finalFiles.length) {
-                                                    scriptsConcatCallback(null, slidevs);
-                                                }
+                                                else if ((index + 1) === finalFiles.length) scriptsConcatCallback(null, slidevs);
                                             });
                                         }
                                     });
@@ -383,8 +394,18 @@ function prepareScripts(slidevs, buildCallback) {
     ], function(err, slidevs) {
         if (err) showMessage('scripts async', err);
         else {
-            console.log('+ Concatenating scripts done');
-            buildCallback(null, slidevs);
+
+            // Minify front-end script
+            gulp.src(slidevScriptFile)
+                .pipe(uglify({ mangle: false }))
+                .pipe(gulp.dest(slidevs.slidevsFolder))
+                .on('error', function(err) {
+                    showMessage('minifying front-end script', err);
+                })
+                .on('end', function() {
+                    buildCallback(null, slidevs);
+                });
+
         }
     });
 
