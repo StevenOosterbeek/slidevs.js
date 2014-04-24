@@ -86,7 +86,7 @@ body.controls {
     background-color: #474843;
 }
 
-.controls-wrapper, .control, .current, .connection, .note-tap, .saved-message {
+.controls-wrapper, .control, .slide-number, .current-note, .connection, .note-tap, .saved-message {
     overflow: hidden;
     color: white;
     text-align: center;
@@ -97,7 +97,7 @@ body.controls {
     border-radius: 5px;
 }
 
-.controls-wrapper, .current, .note-tap {
+.controls-wrapper, .slide-number, .current-note, .note-tap {
     background-color: rgba(0, 0, 0, .2);
     border: 1px solid rgba(255, 255, 255, .1);
 }
@@ -147,9 +147,17 @@ body.controls {
     transition: opacity ease-out .5s;
 }
 
-.current {
+.slide-number {
     width: 84%;
     padding: .8em;
+}
+
+.current-note {
+    position: fixed;
+    top: 1em;
+    left: 1em;
+    padding: .3em .5em;
+    background-color: rgba(0, 0, 0, .3);
 }
 
 .connection {
@@ -193,7 +201,7 @@ body.controls {
 }
 
 .save {
-    bottom: 10.5em;
+    bottom: 9.7em;
     width: 2.8em;
     height: 2.4em;
 }
@@ -248,8 +256,8 @@ body.controls {
 }
 
 .erase {
-    bottom: 6em;
-    width: 2.5em;
+    bottom: 5.5em;
+    width: 2.3em;
     height: 3em;
 }
 
