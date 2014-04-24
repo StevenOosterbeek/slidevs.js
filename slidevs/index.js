@@ -145,7 +145,7 @@ function checkSlidevsFolder(slidevs, buildCallback) {
 
     function createSlidevsFolder() {
         fs.mkdir(slidevs.slidevsFolder, [], function(err) {
-            if (err) showMessage('creating a hidden slidevs folder' + err);
+            if (err) showMessage('creating a hidden slidevs folder', err);
             else {
                 console.log('+ Checking folder done');
                 buildCallback(null, slidevs);

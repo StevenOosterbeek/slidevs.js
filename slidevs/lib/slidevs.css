@@ -86,7 +86,7 @@ body.controls {
     background-color: #474843;
 }
 
-.controls-wrapper, .control, .current, .note-tap {
+.controls-wrapper, .control, .current, .connection, .note-tap {
     overflow: hidden;
     color: white;
     text-align: center;
@@ -129,6 +129,20 @@ body.controls {
 .current {
     width: 84%;
     padding: .8em;
+}
+
+.connection {
+    position: relative;
+    width: 84%;
+    padding: .8em;
+    margin-top: -3.1rem;
+    font-weight: bold;
+    background-color: #F22323;
+    border: 1px solid #A51818;
+    -webkit-transition: opacity ease-out .2s;
+    -moz-transition: opacity ease-out .2s;
+    -o-transition: opacity ease-out .2s;
+    transition: opacity ease-out .2s;
 }
 
 .note-tap {
@@ -242,7 +256,7 @@ body.controls {
         width: 80%;
     }
 
-    .current {
+    .current, .connection {
         width: 91%;
     }
 

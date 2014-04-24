@@ -39,6 +39,7 @@
             <div class="control right">Next</div>
             <div class="control left" style="opacity:.6;">Previous</div>
             <div class="current"> Current slide: <span class="slide-number">-</span> </div>
+            <div class="connection">Not connected...</div>
         </div>
 
         <script type="text/javascript">
@@ -51,6 +52,7 @@
                         left = $('.left'),
                         right = $('.right'),
                         slideNumber = $('.slide-number'),
+                        connection = $('.connection'),
                         tapToNote = $('.note-tap'),
                         noteControls = {
                             close: $('.close'),
@@ -69,6 +71,14 @@
                     socket.on('totalSlides', function(ts) {
                         slides.total = ts;
                         slides.update(true, false);
+                        connection.css({ 'background-color' : '#1DC64F', 'border-color' : '#19A743' });
+                        connection.text('Connected!');
+                        setTimeout(function() {
+                            connection.css({ 'opacity' : '0' });
+                            setTimeout(function() {
+                                // connection.remove();
+                            }, 200);
+                        }, 800);
                     });
 
                     socket.on('updateSlideNumber', function(slide) {
