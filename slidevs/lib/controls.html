@@ -19,6 +19,12 @@
         [## Socket-connection ##]
 
         <div class="note-canvas">
+            <div class="save">
+                <div class="disk">
+                    <div class="label-one"><div class="white"></div></div>
+                    <div class="label-two"></div>
+                </div>
+            </div>
             <div class="erase">
                 <div class="eraser">
                     <div class="point"></div>
@@ -28,6 +34,10 @@
                 <div class="close-stripe left-right"></div>
                 <div class="close-stripe right-left"></div>
             </div>
+        </div>
+
+        <div class="saved-message">
+            Your note has succesfully been saved!
         </div>
 
         <div class="note-tap">
@@ -54,9 +64,11 @@
                         slideNumber = $('.slide-number'),
                         connection = $('.connection'),
                         tapToNote = $('.note-tap'),
+                        saveSucces = $('.saved-message'),
                         noteControls = {
+                            save: $('.save'),
+                            erase: $('.erase'),
                             close: $('.close'),
-                            erase: $('.erase')
                         },
                         slides = {
                             total: 0,
@@ -92,7 +104,7 @@
 
                             socket.emit('openNote');
                             $('.note-canvas').css({ 'height' : '100%' });
-                            $('.erase, .close').css({ 'opacity' : '1' });
+                            $('.save, .erase, .close').css({ 'opacity' : '1' });
 
                             setTimeout(function() {
 
@@ -169,8 +181,6 @@
                                 // Touch
                                 createdCanvas.addEventListener('touchstart', function(event) {
 
-                                    console.log('touchstart');
-
                                     var x = event.targetTouches[0].pageX,
                                         y = event.targetTouches[0].pageY;
 
@@ -191,17 +201,47 @@
 
                                 createdCanvas.addEventListener('touchend', note.draw.end, false);
 
-                                // Close/erase
+                                // Save/erase/close
+                                var closeNote = function(saved) {
+                                    $('.note-canvas').css({ 'height': '0' });
+                                    $('.save, .erase, .close').css({ 'opacity' : '0' });
+                                    createdContext.clearRect(0, 0, createdContext.canvas.width, createdContext.canvas.height);
+                                    socket.emit('closeNote');
+                                    if (saved) {
+
+                                    }
+                                }
+
                                 noteControls.erase.click(function() {
                                     socket.emit('erase');
                                     notes[slides.current].reset();
                                 });
 
+                                noteControls.save.click(function() {
+
+                                    var createdNote = createdContext.getImageData(0, 0, $('.note-canvas').width(), $('.note-canvas').height()),
+                                        compositeOperation = createdContext.globalCompositeOperation;
+
+                                    // Color background before exporting
+                                    createdContext.globalCompositeOperation = "destination-over";
+                                    createdContext.fillStyle = '#FCFCFC';
+                                    createdContext.fillRect(0, 0, $('.note-canvas').width(), $('.note-canvas').height());
+
+                                    socket.emit('savedNote', createdCanvas.toDataURL('image/jpeg;base64;'));
+                                    noteControls.save.css({ 'opacity' : '.2' });
+
+                                });
+
+                                socket.on('noteRecieved', function() {
+                                    closeNote();
+                                    saveSucces.css({ 'opacity' : '1' });
+                                    setTimeout(function() {
+                                        saveSucces.css({ 'opacity' : '0' });
+                                    }, 1500);
+                                });
+
                                 noteControls.close.click(function() {
-                                    $('.note-canvas').css({ 'height': '0' });
-                                    $('.erase, .close').css({ 'opacity' : '0' });
-                                    createdContext.clearRect(0, 0, createdContext.canvas.width, createdContext.canvas.height);
-                                    socket.emit('closeNote');
+                                    closeNote();
                                 });
 
                             }, 500);

@@ -155,6 +155,11 @@ $(document).ready(function() {
                 context.beginPath();
         });
 
+        socket.on('savedNote', function(note) {
+            document.location.href = note.replace('image/png', 'image/octet-stream');
+            socket.emit('recievedNote');
+        });
+
         socket.on('refresh', function() {
             location.reload(true);
         });

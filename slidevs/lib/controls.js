@@ -50,6 +50,10 @@ exports = module.exports = function(uris, slidevs) {
                 ssocket.emit('erase');
             });
 
+            csocket.on('savedNote', function(note) {
+                ssocket.emit('savedNote', note);
+            });
+
             // Slidev
             ssocket.emit('askTotalSlides');
 
@@ -59,6 +63,10 @@ exports = module.exports = function(uris, slidevs) {
 
             ssocket.on('updateSlideNumber', function(slideUpdate) {
                 csocket.emit('updateSlideNumber', slideUpdate);
+            });
+
+            ssocket.on('recievedNote', function() {
+                csocket.emit('noteRecieved');
             });
 
             // Refresh on disconnect

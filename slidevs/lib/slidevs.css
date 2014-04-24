@@ -86,7 +86,7 @@ body.controls {
     background-color: #474843;
 }
 
-.controls-wrapper, .control, .current, .connection, .note-tap {
+.controls-wrapper, .control, .current, .connection, .note-tap, .saved-message {
     overflow: hidden;
     color: white;
     text-align: center;
@@ -100,6 +100,27 @@ body.controls {
 .controls-wrapper, .current, .note-tap {
     background-color: rgba(0, 0, 0, .2);
     border: 1px solid rgba(255, 255, 255, .1);
+}
+
+.note-tap, .saved-message {
+    padding: 1em 0;
+}
+
+.note-tap {
+    width: 24em;
+    margin: 9% auto 0;
+}
+
+.saved-message {
+    opacity: 0;
+    width: 20em;
+    margin: 11% auto 0;
+    background-color: #1DC64F;
+    border: 1px solid #19A743;
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
 }
 
 .controls-wrapper {
@@ -132,6 +153,7 @@ body.controls {
 }
 
 .connection {
+    opacity: 1;
     position: relative;
     width: 84%;
     padding: .8em;
@@ -139,16 +161,10 @@ body.controls {
     font-weight: bold;
     background-color: #F22323;
     border: 1px solid #A51818;
-    -webkit-transition: opacity ease-out .2s;
-    -moz-transition: opacity ease-out .2s;
-    -o-transition: opacity ease-out .2s;
-    transition: opacity ease-out .2s;
-}
-
-.note-tap {
-    width: 24em;
-    margin: 25% auto 0;
-    padding: 1em 0;
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
 }
 
 .orientation-warning {
@@ -165,18 +181,76 @@ body.controls {
     border-radius: 3px;
 }
 
-.erase {
+.save, .erase, .close {
     opacity: 0;
     position: fixed;
     z-index: 1000;
     right: 2em;
-    bottom: 6em;
-    width: 2.5em;
-    height: 3em;
     -webkit-transition: all ease-out .8s;
     -moz-transition: all ease-out .8s;
     -o-transition: all ease-out .8s;
     transition: all ease-out .8s;
+}
+
+.save {
+    bottom: 10.5em;
+    width: 2.8em;
+    height: 2.4em;
+}
+
+.disk {
+    position: absolute;
+    width: 2.5em;
+    height: 2.3em;
+    border-radius: 4px 7px 4px 4px;
+    -webkit-border-radius: 4px 7px 4px 4px;
+    -moz-border-radius: 4px 7px 4px 4px;
+    border-radius: 4px 7px 4px 4px;
+    border-bottom: 2px solid rgba(0, 0, 0, .5);
+    background-color: #4F4F4F;
+}
+
+.disk .label-one {
+    width: 50%;
+    height: .8em;
+    margin: 0 0 0 .4em;
+    background-color: rgba(0, 0, 0, .5);
+    border-radius: 0 0 2px 2px;
+    -webkit-border-radius: 0 0 2px 2px;
+    -moz-border-radius: 0 0 2px 2px;
+    border-radius: 0 0 2px 2px;
+}
+
+.disk .label-one .white {
+    opacity: .3;
+    float: right;
+    width: 20%;
+    height: .4em;
+    margin: .2em .2em 0 0;
+    background-color: white;
+    border-radius: 1px;
+    -webkit-border-radius: 1px;
+    -moz-border-radius: 1px;
+    border-radius: 1px;
+}
+
+.disk .label-two {
+    position: absolute;
+    bottom: 0;
+    width: 72%;
+    height: 1em;
+    margin: 0 0 0 .4em;
+    background-color: rgba(0, 0, 0, .4);
+    border-radius: 2px 2px 0 0;
+    -webkit-border-radius: 2px 2px 0 0;
+    -moz-border-radius: 2px 2px 0 0;
+    border-radius: 2px 2px 0 0;
+}
+
+.erase {
+    bottom: 6em;
+    width: 2.5em;
+    height: 3em;
 }
 
 .eraser {
@@ -200,7 +274,7 @@ body.controls {
     width: 85%;
     height: .9em;
     margin: 1.75em .15em 0 0;
-    background-color: white;
+    background-color: rgba(255, 255, 255, .8);
     border-radius: 0 0 2px 2px;
     -webkit-border-radius: 0 0 2px 2px;
     -moz-border-radius: 0 0 2px 2px;
@@ -208,17 +282,9 @@ body.controls {
 }
 
 .close {
-    position: fixed;
-    z-index: 1000;
-    right: 2em;
     bottom: 2em;
     width: 2.8em;
     height: 2.8em;
-    opacity: 0;
-    -webkit-transition: all ease-out .8s;
-    -moz-transition: all ease-out .8s;
-    -o-transition: all ease-out .8s;
-    transition: all ease-out .8s;
 }
 
 .close-stripe {
