@@ -395,8 +395,15 @@ body.controls {
         width: 80%;
     }
 
-    .current, .connection {
+    .slide-number {
         width: 91%;
+    }
+
+    .connection {
+        position: static;
+        z-index: 1000;
+        width: 73%;
+        margin: -4.2em auto 0;
     }
 
     .note-tap {
