@@ -135,7 +135,7 @@ body.controls {
     position: relative;
     width: 84%;
     padding: .8em;
-    margin-top: -3.1rem;
+    margin-top: -3.12em;
     font-weight: bold;
     background-color: #F22323;
     border: 1px solid #A51818;
@@ -199,12 +199,12 @@ body.controls {
     float: right;
     width: 85%;
     height: .9em;
-    margin: .2em .15em 0 0;
+    margin: 1.75em .15em 0 0;
     background-color: white;
-    border-radius: 2px 2px 0 0;
-    -webkit-border-radius: 2px 2px 0 0;
-    -moz-border-radius: 2px 2px 0 0;
-    border-radius: 2px 2px 0 0;
+    border-radius: 0 0 2px 2px;
+    -webkit-border-radius: 0 0 2px 2px;
+    -moz-border-radius: 0 0 2px 2px;
+    border-radius: 0 0 2px 2px;
 }
 
 .close {

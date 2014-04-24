@@ -12,6 +12,7 @@ $(document).ready(function() {
         isSliding: false,
         progress: $('.progress'),
         notes: [],
+        socket: null,
         adjustProgress: function() {
             this.progress.css({ 'width' : ((100 / this.totalSlides) * (this.currentSlide + 1)) + '%' });
         },
@@ -57,6 +58,13 @@ $(document).ready(function() {
                 this.strip.css({ 'left' : distance });
                 this.adjustProgress();
                 setTimeout(function() { slidevs.isSliding = false; }, 500); // Wait till the CSS animation is over
+
+                this.socket.emit('updateSlideNumber', {
+                    number: (slidevs.currentSlide + 1),
+                    first: slidevs.isFirstSlide(),
+                    last: slidevs.isLastSlide()
+                });
+
             }
         },
         openNote: function() {
@@ -107,7 +115,7 @@ $(document).ready(function() {
     // Socket
     if ($('input.socket-connection').length !== 0) {
 
-        var socket = io.connect($('input.socket-connection').val());
+        var socket = slidevs.socket = io.connect($('input.socket-connection').val());
 
         socket.on('askTotalSlides', function() {
             socket.emit('totalSlides', slidevs.totalSlides);
@@ -115,11 +123,6 @@ $(document).ready(function() {
 
         socket.on('executeSlide', function(direction) {
             slidevs.slide(direction);
-            socket.emit('updateSlideNumber', {
-                number: (slidevs.currentSlide + 1),
-                first: slidevs.isFirstSlide(),
-                last: slidevs.isLastSlide()
-            });
         });
 
         // Notes

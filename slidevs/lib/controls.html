@@ -73,12 +73,7 @@
                         slides.update(true, false);
                         connection.css({ 'background-color' : '#1DC64F', 'border-color' : '#19A743' });
                         connection.text('Connected!');
-                        setTimeout(function() {
-                            connection.css({ 'opacity' : '0' });
-                            setTimeout(function() {
-                                // connection.remove();
-                            }, 200);
-                        }, 800);
+                        setTimeout(function() { connection.css({ 'opacity' : '0' }); }, 800);
                     });
 
                     socket.on('updateSlideNumber', function(slide) {
@@ -173,6 +168,8 @@
 
                                 // Touch
                                 createdCanvas.addEventListener('touchstart', function(event) {
+
+                                    console.log('touchstart');
 
                                     var x = event.targetTouches[0].pageX,
                                         y = event.targetTouches[0].pageY;
