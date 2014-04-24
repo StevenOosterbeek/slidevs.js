@@ -12,6 +12,7 @@ $(document).ready(function() {
         isSliding: false,
         progress: $('.progress'),
         notes: [],
+        noteIsOpen: false,
         socket: null,
         adjustProgress: function() {
             this.progress.css({ 'width' : ((100 / this.totalSlides) * (this.currentSlide + 1)) + '%' });
@@ -27,48 +28,9 @@ $(document).ready(function() {
             this.strip.css({ 'left' : '-' + (this.currentSlide * this.getFrameWidth()) + 'px' });
             this.adjustProgress();
         },
-        isLastSlide: function() {
-            return ((this.currentSlide + 2) > this.totalSlides);
-        },
-        isFirstSlide: function() {
-            return (this.currentSlide < 1);
-        },
-        slide: function(direction) {
-            if (!this.isSliding) {
-                var distance = parseInt(this.strip.css('left').replace('px', ''), 10);
-                switch(direction) {
-                    case 'right':
-                        if(!this.isLastSlide()) {
-                            this.isSliding = true;
-                            distance -= this.getFrameWidth();
-                            this.currentSlide++;
-                        }
-                        break;
-                    case 'left':
-                        if(!this.isFirstSlide()) {
-                            this.isSliding = true;
-                            distance += this.getFrameWidth();
-                            this.currentSlide--;
-                        }
-                        break;
-                    default:
-                        distance = 0;
-                        console.warn('Slidevs does not know in which direction to slide!');
-                }
-                this.strip.css({ 'left' : distance });
-                this.adjustProgress();
-                setTimeout(function() { slidevs.isSliding = false; }, 500); // Wait till the CSS animation is over
-
-                this.socket.emit('updateSlideNumber', {
-                    number: (slidevs.currentSlide + 1),
-                    first: slidevs.isFirstSlide(),
-                    last: slidevs.isLastSlide()
-                });
-
-            }
-        },
         openNote: function() {
 
+            this.noteIsOpen = true;
             $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'height' : '100%' });
 
             setTimeout(function() {
@@ -97,7 +59,49 @@ $(document).ready(function() {
 
         },
         closeNote: function() {
+            this.noteIsOpen = false;
             $(this.slides[this.currentSlide]).find('.note-canvas').css({ 'height' : '0' });
+        },
+        isLastSlide: function() {
+            return ((this.currentSlide + 2) > this.totalSlides);
+        },
+        isFirstSlide: function() {
+            return (this.currentSlide < 1);
+        },
+        slide: function(direction) {
+            if (!this.isSliding && !this.noteIsOpen) {
+                var distance = parseInt(this.strip.css('left').replace('px', ''), 10);
+                switch(direction) {
+                    case 'right':
+                        if(!this.isLastSlide()) {
+                            this.isSliding = true;
+                            distance -= this.getFrameWidth();
+                            this.currentSlide++;
+                        }
+                        break;
+                    case 'left':
+                        if(!this.isFirstSlide()) {
+                            this.isSliding = true;
+                            distance += this.getFrameWidth();
+                            this.currentSlide--;
+                        }
+                        break;
+                    default:
+                        distance = 0;
+                        console.warn('Slidevs does not know in which direction to slide!');
+                }
+
+                this.socket.emit('updateSlideNumber', {
+                    number: (slidevs.currentSlide + 1),
+                    first: slidevs.isFirstSlide(),
+                    last: slidevs.isLastSlide()
+                });
+
+                this.strip.css({ 'left' : distance });
+                this.adjustProgress();
+                setTimeout(function() { slidevs.isSliding = false; }, 500); // Wait till the CSS animation is over
+
+            }
         }
     };
 
@@ -125,7 +129,6 @@ $(document).ready(function() {
             slidevs.slide(direction);
         });
 
-        // Notes
         socket.on('openNote', function() {
             slidevs.openNote();
         });

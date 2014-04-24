@@ -148,9 +148,47 @@
                                             end: function() {
                                                 this.isDrawing = false;
                                             }
+                                        },
+                                        save: function() {
+
+                                            var createdNote = createdContext.getImageData(0, 0, $('.note-canvas').width(), $('.note-canvas').height()),
+                                                compositeOperation = createdContext.globalCompositeOperation;
+
+                                            // Color background before exporting
+                                            createdContext.globalCompositeOperation = "destination-over";
+                                            createdContext.fillStyle = '#FCFCFC';
+                                            createdContext.fillRect(0, 0, $('.note-canvas').width(), $('.note-canvas').height());
+
+                                            socket.emit('savedNote', createdCanvas.toDataURL('image/jpeg;base64;'));
+                                            noteControls.save.css({ 'opacity' : '.2' });
+
+                                        },
+                                        erase: function() {
+                                            socket.emit('erase');
+                                            notes[slides.current].reset();
+                                        },
+                                        close: function() {
+                                            $('.note-canvas').css({ 'height': '0' });
+                                            $('.save, .erase, .close').css({ 'opacity' : '0' });
+                                            createdContext.clearRect(0, 0, createdContext.canvas.width, createdContext.canvas.height);
+                                            noteControls.save.unbind('click');
+                                            socket.emit('closeNote');
                                         }
+
                                     };
 
+                                // Binding save/erase/close
+                                var bindClick = function(which) {
+                                        noteControls[which].bind('click', function() {
+                                            if (which === 'save') noteControls[which].unbind('click');
+                                            var execute = note[which];
+                                            execute();
+                                        });
+                                    };
+
+                                ['save', 'erase', 'close'].forEach(function(option) {
+                                    bindClick(option);
+                                });
 
                                 // Create or redraw note
                                 if(!notes[slides.current]) {
@@ -204,47 +242,13 @@
 
                                 createdCanvas.addEventListener('touchend', note.draw.end, false);
 
-                                // Save/erase/close
-                                var closeNote = function(saved) {
-                                    $('.note-canvas').css({ 'height': '0' });
-                                    $('.save, .erase, .close').css({ 'opacity' : '0' });
-                                    createdContext.clearRect(0, 0, createdContext.canvas.width, createdContext.canvas.height);
-                                    socket.emit('closeNote');
-                                    if (saved) {
-
-                                    }
-                                }
-
-                                noteControls.erase.click(function() {
-                                    socket.emit('erase');
-                                    notes[slides.current].reset();
-                                });
-
-                                noteControls.save.click(function() {
-
-                                    var createdNote = createdContext.getImageData(0, 0, $('.note-canvas').width(), $('.note-canvas').height()),
-                                        compositeOperation = createdContext.globalCompositeOperation;
-
-                                    // Color background before exporting
-                                    createdContext.globalCompositeOperation = "destination-over";
-                                    createdContext.fillStyle = '#FCFCFC';
-                                    createdContext.fillRect(0, 0, $('.note-canvas').width(), $('.note-canvas').height());
-
-                                    socket.emit('savedNote', createdCanvas.toDataURL('image/jpeg;base64;'));
-                                    noteControls.save.css({ 'opacity' : '.2' });
-
-                                });
-
+                                // Note recieved confirm
                                 socket.on('noteRecieved', function() {
-                                    closeNote();
+                                    note.close();
                                     saveSucces.css({ 'opacity' : '1' });
                                     setTimeout(function() {
                                         saveSucces.css({ 'opacity' : '0' });
                                     }, 1500);
-                                });
-
-                                noteControls.close.click(function() {
-                                    closeNote();
                                 });
 
                             }, 500);
