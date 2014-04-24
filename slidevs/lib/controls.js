@@ -30,6 +30,10 @@ exports = module.exports = function(uris, slidevs) {
         controlSocket.sockets.on('connection', function(csocket) {
 
             // Controls
+            csocket.on('checkPass', function(pass) {
+                csocket.emit('passChecked', slidevs.password === pass);
+            });
+
             csocket.on('slide', function(direction) {
                 ssocket.emit('executeSlide', direction);
             });

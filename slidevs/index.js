@@ -21,7 +21,8 @@ function slidevs(userSettings) {
         slidesFolder: userSettings.slidesFolder ? '/' + userSettings.slidesFolder.toLowerCase().replace(' ', '').replace('/', '') : '/slides',
         styling: userSettings.styling ? userSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
         scriptsFolder: userSettings.scriptsFolder ? userSettings.scriptsFolder.toLowerCase().replace(' ', '') : '/scripts',
-        controls: typeof(userSettings.controls) === 'boolean' ? userSettings.controls : true,
+        controls: typeof(userSettings.controls.on) === 'object' ? userSettings.controls.on : true,
+        password: userSettings.controls.password.length !== 0 ? userSettings.controls.password : false,
         progressBar: typeof(userSettings.progressBar) === 'boolean' ? userSettings.progressBar : true,
         port: userSettings.port || 5000,
         address: (os.networkInterfaces().en1 !== undefined ? os.networkInterfaces().en1[1].address : 'http://localhost'),
@@ -51,6 +52,7 @@ function slidevs(userSettings) {
         styling: settings.styling,
         scriptsFolder: settings.scriptsFolder,
         controls: settings.controls,
+        password: settings.password,
         progressBar: settings.progressBar,
         port: settings.port,
         socketPort: settings.port + 1,
@@ -466,27 +468,69 @@ function checkControls(slidevs, buildCallback) {
     if(slidevs.controls) {
 
         var controlsFile = path.join(path.dirname(module.filename), 'lib', 'controls.html'),
-            finalControlsFile = path.join(slidevs.slidevsFolder, 'controls.html');
+            finalControlsFile = path.join(slidevs.slidevsFolder, 'controls.html'),
+            vendorScriptsFolder = path.join(path.dirname(module.filename), 'lib', 'vendor'),
+            jqueryFile;
 
-        (fs.createReadStream(controlsFile))
-                .pipe(es.split('\n'))
-                .pipe(es.mapSync(function(line) { return line.split('\t'); }))
-                .pipe(es.mapSync(function(line) {
-                    line = line[0].trim();
-                    if (line.indexOf('[## Title ##]') > -1) line = '<title>' + slidevs.name + ' - Controls</title>';
-                    if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>';
-                    if (line.indexOf('[## Socket-connection ##]') > -1) line = '<input type="hidden" name="socket-connection" class="socket-connection" value="' + slidevs.address + ':' + slidevs.socketPort + '" />';
-                    return line;
-                }))
-                .pipe(es.join('\n'))
-                .pipe(es.wait())
-            .pipe(fs.createWriteStream(finalControlsFile))
-            .on('error', function(err) {
-                showMessage('copying controls file', err);
-            })
-            .on('finish', function() {
+        async.waterfall([
+            function(controlsCallback) {
+                fs.readdir(vendorScriptsFolder, function(err, scripts) {
+                    if (err) showMessage('reading vendor scripts folder for getting jquery', err);
+                    else {
+                        scripts.forEach(function(scriptName) {
+                            if (scriptName.split('-')[0] === 'jquery') {
+                                jqueryFile = scriptName;
+                                fs.writeFile(path.join(slidevs.slidevsFolder, scriptName), '', function(err) {
+                                    if (err) showMessage('creating the front-end jquery file', err);
+                                    else {
+                                        fs.readFile(path.join(vendorScriptsFolder, scriptName), 'utf-8', function(err, data) {
+                                            if (err) showMessage('getting jquery file', err);
+                                            else {
+                                                fs.appendFile(path.join(slidevs.slidevsFolder, scriptName), (data.toString() + '\n'), function(err) {
+                                                    if (err) showMessage('appending jquery to jquery front-end file', err);
+                                                    else controlsCallback(null, slidevs);
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            },
+            function(slidevs, controlsCallback) {
+                (fs.createReadStream(controlsFile))
+                    .pipe(es.split('\n'))
+                    .pipe(es.mapSync(function(line) { return line.split('\t'); }))
+                    .pipe(es.mapSync(function(line) {
+                        line = line[0].trim();
+                        if (line.indexOf('[## Title ##]') > -1) line = '<title>' + slidevs.name + ' - Controls</title>';
+                        if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>\n<script type="text/javascript" src="/' + jqueryFile + '"></script>';
+                        if (line.indexOf('[## Password-check ##]') > -1) {
+                            if (slidevs.password && !slidevs.isRunning()) line = '<div class="pass-check">\n<span class="heading">Password required</span>\n<input type="password" class="pass-input" />\n<div class="pass-button">Let me control!</div>\n</div>';
+                            else line = '';
+                        }
+                        if (line.indexOf('[## Socket-connection ##]') > -1) line = '<input type="hidden" name="socket-connection" class="socket-connection" value="' + slidevs.address + ':' + slidevs.socketPort + '" />';
+                        return line;
+                    }))
+                    .pipe(es.join('\n'))
+                    .pipe(es.wait())
+                .pipe(fs.createWriteStream(finalControlsFile))
+                .on('error', function(err) {
+                    showMessage('copying controls file', err);
+                })
+                .on('finish', function() {
+                    controlsCallback(null, slidevs);
+                });
+            }
+        ], function(err, slidevs) {
+            if (err) showMessage('scripts async', err);
+            else {
+                console.log('+ Done checking controls');
                 buildCallback(null, slidevs);
-            });
+            }
+        });
 
     } else buildCallback(null, slidevs);
 

@@ -86,7 +86,60 @@ body.controls {
     background-color: #474843;
 }
 
-.controls-wrapper, .control, .slide-number, .current-note, .connection, .note-tap, .saved-message {
+.pass-check {
+    width: 20em;
+    height: 10em;
+    padding: 1em;
+    margin: 10% auto 0;
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
+}
+
+.pass-check .heading {
+    font-weight: bold;
+}
+
+.pass-input {
+    width: 80%;
+    padding: 1em;
+    margin: 1em 0;
+    border: 1px solid rgba(0, 0, 0, .6);
+    background-color: rgba(255, 255, 255, .8);
+    -webkit-appearance: none;
+    text-align: center;
+    font-size: 1em;
+    color: #474843;
+}
+
+.pass-button {
+    width: 60%;
+    margin: 0 auto;
+    padding: .5em;
+    font-weight: bold;
+    background-color: #1DC64F;
+    border: 1px solid #19A743;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
+}
+
+.control-wrapper {
+    display: none;
+    opacity: 0;
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
+}
+
+.controls-wrapper, .control, .slide-number, .current-note, .connection, .note-tap, .saved-message, .pass-check {
     overflow: hidden;
     color: white;
     text-align: center;
@@ -97,7 +150,7 @@ body.controls {
     border-radius: 5px;
 }
 
-.controls-wrapper, .slide-number, .current-note, .note-tap {
+.controls-wrapper, .slide-number, .current-note, .note-tap, .pass-check {
     background-color: rgba(0, 0, 0, .2);
     border: 1px solid rgba(255, 255, 255, .1);
 }
@@ -150,6 +203,11 @@ body.controls {
 .slide-number {
     width: 84%;
     padding: .8em;
+    opacity: 0;
+    -webkit-transition: opacity ease-out .5s;
+    -moz-transition: opacity ease-out .5s;
+    -o-transition: opacity ease-out .5s;
+    transition: opacity ease-out .5s;
 }
 
 .current-note {
@@ -162,8 +220,10 @@ body.controls {
 
 .connection {
     opacity: 1;
-    position: relative;
-    width: 84%;
+    position: fixed;
+    right: 4em;
+    bottom: 4.1em;
+    width: 8.3em;
     padding: .8em;
     margin-top: -3.12em;
     font-weight: bold;
@@ -323,6 +383,11 @@ body.controls {
 }
 
 @media only screen and (max-device-width : 765px) {
+
+    .pass-check {
+        width: 15em;
+        margin: 20% auto 0;
+    }
 
     .controls-wrapper {
         position: static;

@@ -11,47 +11,53 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
 
         [## Assets ##]
-        <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 
     </head>
     <body class="controls">
 
         [## Socket-connection ##]
 
-        <div class="note-canvas">
-            <div class="current-note">-</div>
-            <div class="save">
-                <div class="disk">
-                    <div class="label-one"><div class="white"></div></div>
-                    <div class="label-two"></div>
+        [## Password-check ##]
+
+        <div class="control-wrapper">
+
+            <div class="note-canvas">
+                <div class="current-note">-</div>
+                <div class="save">
+                    <div class="disk">
+                        <div class="label-one"><div class="white"></div></div>
+                        <div class="label-two"></div>
+                    </div>
+                </div>
+                <div class="erase">
+                    <div class="eraser">
+                        <div class="point"></div>
+                    </div>
+                </div>
+                <div class="close">
+                    <div class="close-stripe left-right"></div>
+                    <div class="close-stripe right-left"></div>
                 </div>
             </div>
-            <div class="erase">
-                <div class="eraser">
-                    <div class="point"></div>
-                </div>
+
+            <div class="saved-message">
+                Your note has succesfully been saved!
             </div>
-            <div class="close">
-                <div class="close-stripe left-right"></div>
-                <div class="close-stripe right-left"></div>
+
+            <div class="note-tap">
+                Tap here to open up the note of this slide.
+                <div class="orientation-warning">Drawing notes should be done in landscape!</div>
             </div>
+
+            <div class="controls-wrapper">
+                <div class="control right">Next</div>
+                <div class="control left" style="opacity:.6;">Previous</div>
+                <div class="slide-number"> Current slide: <span class="current-controls">-</span> </div>
+            </div>
+
         </div>
 
-        <div class="saved-message">
-            Your note has succesfully been saved!
-        </div>
-
-        <div class="note-tap">
-            Tap here to open up the note of this slide.
-            <div class="orientation-warning">Drawing notes should be done in landscape!</div>
-        </div>
-
-        <div class="controls-wrapper">
-            <div class="control right">Next</div>
-            <div class="control left" style="opacity:.6;">Previous</div>
-            <div class="slide-number"> Current slide: <span class="current-controls">-</span> </div>
-            <div class="connection">Not connected...</div>
-        </div>
+        <div class="connection">Not connected...</div>
 
         <script type="text/javascript">
 
@@ -83,17 +89,89 @@
                             }
                         };
 
+                    // Auth
+                    var cookieManager = {
+                        name: document.title.split('-')[0].toLowerCase().replace(' ', '').trim(),
+                        userAuthenticated: false,
+                        set: function() {
+                            var now = new Date(), expires;
+                                now.setTime(now.getTime() + ( 24 * 60 * 60 * 1000 ));
+                                expires = '; expires=' + now.toGMTString() + ';';
+                            document.cookie = 'sc-auth' + '=' + this.name + expires;
+                        },
+                        check: function() {
+                            var defer = $.Deferred(),
+                                cookies = document.cookie.split('; ');
+                            if(cookies.length > 0) {
+                                cookies.forEach(function(c, index) {
+                                    var cookie = c.split('=');
+                                    if(cookie[0] === 'sc-auth' && cookie[1] === cookieManager.name) {
+                                        cookieManager.userAuthenticated = true;
+                                        defer.resolve();
+                                    }
+                                    else if((index + 1) === cookies.length) {
+                                        cookieManager.userAuthenticated = false;
+                                        defer.resolve();
+                                    }
+                                });
+                            } else defer.resolve();
+                            return defer.promise;
+                        }
+                    };
+
+                    var passCheck = $('.pass-check'),
+                        passInput = $('.pass-input'),
+                        passButton = $('.pass-button'),
+                        controlWrapper = $('.control-wrapper');
+
+                    function showControls() {
+                        passCheck.remove();
+                        controlWrapper.css({ 'display': 'block', 'opacity': '1' });
+                        setTimeout(function() {
+                            controlWrapper.css({ 'opacity' : '1' });
+                        }, 300);
+                    };
+
+                    if (passCheck.length === 0) showControls();
+                    $.when(cookieManager.check()).done(function() {
+                        if (cookieManager.userAuthenticated) showControls();
+                    });
+
+                    passButton.bind('click', function() {
+                        passButton.css({ 'opacity' : '.5' });
+                        socket.emit('checkPass', passInput.val());
+                        console.log('Sent pass check');
+                    });
+
+                    socket.on('passChecked', function(isCorrect) {
+                        if(isCorrect) {
+                            showControls();
+                            cookieManager.set();
+                        } else {
+                            passInput.val('');
+                            passInput.css({ 'border-color' : '#D83B3B' });
+                            passButton.css({ 'opacity' : '1' });
+                        }
+                    });
+
                     socket.on('totalSlides', function(ts) {
                         slides.total = ts;
                         slides.update(true, false);
                         connection.css({ 'background-color' : '#1DC64F', 'border-color' : '#19A743' });
                         connection.text('Connected!');
-                        setTimeout(function() { connection.css({ 'opacity' : '0' }); }, 1000);
+                        setTimeout(function() {
+                            $('.slide-number').css({ 'opacity' : '1' });
+                            connection.css({ 'opacity' : '0' });
+                        }, 1000);
                     });
 
                     socket.on('updateSlideNumber', function(slide) {
                         slides.current = slide.number;
                         slides.update(slide.first, slide.last);
+                    });
+
+                    connection.bind('click', function() {
+                        location.reload(true);
                     });
 
                     left.click(function() { socket.emit('slide', 'left'); });
@@ -178,13 +256,13 @@
                                     };
 
                                 // Binding save/erase/close
-                                var bindClick = function(which) {
-                                        noteControls[which].bind('click', function() {
-                                            if (which === 'save') noteControls[which].unbind('click');
-                                            var execute = note[which];
-                                            execute();
-                                        });
-                                    };
+                                function bindClick(which) {
+                                    noteControls[which].bind('click', function() {
+                                        if (which === 'save') noteControls[which].unbind('click');
+                                        var execute = note[which];
+                                        execute();
+                                    });
+                                };
 
                                 ['save', 'erase', 'close'].forEach(function(option) {
                                     bindClick(option);
@@ -248,7 +326,7 @@
                                     saveSucces.css({ 'opacity' : '1' });
                                     setTimeout(function() {
                                         saveSucces.css({ 'opacity' : '0' });
-                                    }, 1500);
+                                    }, 2000);
                                 });
 
                             }, 500);
@@ -264,6 +342,10 @@
                     socket.on('refresh', function() {
                         location.reload(true);
                     });
+
+                } else {
+
+                    console.warn('No socket connection found!');
 
                 }
 
