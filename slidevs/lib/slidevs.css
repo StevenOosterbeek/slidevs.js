@@ -152,12 +152,17 @@ body.controls {
 }
 
 .erase {
+    opacity: 0;
     position: fixed;
     z-index: 1000;
     right: 2em;
     bottom: 6em;
     width: 2.5em;
     height: 3em;
+    -webkit-transition: all ease-out .8s;
+    -moz-transition: all ease-out .8s;
+    -o-transition: all ease-out .8s;
+    transition: all ease-out .8s;
 }
 
 .eraser {

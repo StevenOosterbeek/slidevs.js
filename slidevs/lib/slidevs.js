@@ -65,21 +65,25 @@ $(document).ready(function() {
 
             setTimeout(function() {
 
-                var canvasWrapper = $($('.note-canvas')[slidevs.currentSlide]),
-                    canvas = document.createElement('canvas');
+                var canvasWrapper = $($('.note-canvas')[slidevs.currentSlide]);
 
-                    canvas.setAttribute('class', 'note');
-                    canvas.setAttribute('width', canvasWrapper.width());
-                    canvas.setAttribute('height', canvasWrapper.height());
-                    canvasWrapper.append(canvas);
-                    if (typeof(G_vmlCanvasManager) !== 'undefined') canvas = G_vmlCanvasManager.initElement(canvas);
+                if(canvasWrapper[0].childElementCount === 0) {
 
-                var context = canvas.getContext('2d');
-                    context.strokeStyle = '#4F4F4F';
-                    context.lineJoin = 'round';
-                    context.lineWidth = 4;
+                    var canvas = document.createElement('canvas');
+                        canvas.setAttribute('class', 'note');
+                        canvas.setAttribute('width', canvasWrapper.width());
+                        canvas.setAttribute('height', canvasWrapper.height());
+                        canvasWrapper.append(canvas);
+                        if (typeof(G_vmlCanvasManager) !== 'undefined') canvas = G_vmlCanvasManager.initElement(canvas);
 
-                if (!slidevs.notes[slidevs.currentSlide]) slidevs.notes[slidevs.currentSlide] = context;
+                    var context = canvas.getContext('2d');
+                        context.strokeStyle = '#4F4F4F';
+                        context.lineJoin = 'round';
+                        context.lineWidth = 4;
+
+                    if (!slidevs.notes[slidevs.currentSlide]) slidevs.notes[slidevs.currentSlide] = context;
+
+                }
 
             }, 500);
 

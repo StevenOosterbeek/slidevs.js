@@ -24,3 +24,4 @@ firstSlidevs.start();
 #### Future fixes
 - Compressing and cleaning the styling and scripts
 - Adding images within the slides
+- Controls password
