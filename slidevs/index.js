@@ -68,7 +68,8 @@ function slidevs(userSettings) {
 
 function startSlidevs(slidevs) {
 
-    console.log('\n# Starting slidevs'.yellow);
+    if (slidevs.isRunning()) console.log('\n## Rebuilding your slidevs started\n'.yellow);
+    else console.log('\n## Building your slidevs started\n'.yellow);
 
     async.waterfall([
         function(startCallback) {
@@ -89,7 +90,6 @@ function startSlidevs(slidevs) {
                     slidevs.start(slidevs);
                 });
 
-            console.log('+ Started watching');
             startCallback(null, slidevsInfo, alreadyRunning);
 
         }
@@ -113,8 +113,6 @@ function startSlidevs(slidevs) {
 
 function buildSlidevs(slidevs, startCallback) {
 
-    console.log('\n=> Starting build'.grey);
-
     async.waterfall([
         function(buildCallback) {
             checkSlidevsFolder(slidevs, buildCallback);
@@ -136,25 +134,17 @@ function buildSlidevs(slidevs, startCallback) {
         },
     ], function(err, slidevs) {
         if (err) showMessage('build async', err);
-        else {
-            console.log('\n== Done building ==');
-            startCallback(null, slidevs);
-        }
+        else startCallback(null, slidevs);
     });
 
 }
 
 function checkSlidevsFolder(slidevs, buildCallback) {
 
-    console.log('\nChecking folder');
-
     function createSlidevsFolder() {
         fs.mkdir(slidevs.slidevsFolder, [], function(err) {
             if (err) showMessage('creating a hidden slidevs folder', err);
-            else {
-                console.log('+ Checking folder done');
-                buildCallback(null, slidevs);
-            }
+            else buildCallback(null, slidevs);
         });
     }
 
@@ -170,8 +160,6 @@ function checkSlidevsFolder(slidevs, buildCallback) {
 }
 
 function prepareSlides(slidevs, buildCallback) {
-
-    console.log('\nPreparing slides');
 
     var tmpSlidesFolder = path.join(slidevs.slidevsFolder, '.slides-tmp');
     fs.mkdir(tmpSlidesFolder, 0777, function(err) {
@@ -233,10 +221,7 @@ function prepareSlides(slidevs, buildCallback) {
 
                             ], function(err, slidevs) {
                                 if (err) showMessage('slides async', err);
-                                else {
-                                    console.log('+ Preparing slides done');
-                                    buildCallback(null, slidevs);
-                                }
+                                else buildCallback(null, slidevs);
                             });
 
                         };
@@ -274,8 +259,6 @@ function prepareSlides(slidevs, buildCallback) {
 }
 
 function prepareStyling(slidevs, buildCallback) {
-
-    console.log('\nPreparing styling');
 
     var styling = path.join(slidevs.slidevsFolder, 'slidevstyling.css');
     async.waterfall([
@@ -322,7 +305,6 @@ function prepareStyling(slidevs, buildCallback) {
                     showMessage('minifying styling', err);
                 })
                 .on('end', function() {
-                    console.log('+ Concatenating styling done');
                     buildCallback(null, slidevs);
                 });
 
@@ -332,8 +314,6 @@ function prepareStyling(slidevs, buildCallback) {
 }
 
 function prepareScripts(slidevs, buildCallback) {
-
-    console.log('\nPreparing scripts');
 
     var slidevScriptFile = path.join(slidevs.slidevsFolder, 'slidevs.js'),
         addScripts = function(which, slidevs, scriptsConcatCallback) {
@@ -415,8 +395,6 @@ function prepareScripts(slidevs, buildCallback) {
 
 function concatSlidevs(slidevs, buildCallback) {
 
-    console.log('\nConcatenating presentation');
-
     var layout = fs.createReadStream(path.join(slidevs.thisFolder, slidevs.layout)),
         slidevsIndex = fs.createWriteStream(path.join(slidevs.slidevsFolder, 'slidevs.html'));
 
@@ -452,10 +430,7 @@ function concatSlidevs(slidevs, buildCallback) {
                 .on('finish', function() {
                     rimraf(path.join(slidevs.slidevsFolder, '.slides-tmp'), function(err) {
                         if (err) showMessage('removing temporary slides folder', err);
-                        else {
-                            console.log('+ Concatenating presentation done');
-                            buildCallback(null, slidevs);
-                        }
+                        else buildCallback(null, slidevs);
                     });
                 });
         }
@@ -526,10 +501,7 @@ function checkControls(slidevs, buildCallback) {
             }
         ], function(err, slidevs) {
             if (err) showMessage('scripts async', err);
-            else {
-                console.log('+ Done checking controls');
-                buildCallback(null, slidevs);
-            }
+            else buildCallback(null, slidevs);
         });
 
     } else buildCallback(null, slidevs);
@@ -537,8 +509,6 @@ function checkControls(slidevs, buildCallback) {
 }
 
 function createSlidevServer(slidevs, startCallback) {
-
-    console.log('\n=> Creating slidevs server'.grey);
 
     var uris = {
             slides: '/' + slidevs.trimmedName,
@@ -565,8 +535,6 @@ function createSlidevServer(slidevs, startCallback) {
         // Slidevs including controls
         require('./lib/controls')(uris, slidevs);
     }
-
-    console.log('\n+ Done creating server');
 
     startCallback(null, slidevs, links, false);
 

@@ -25,4 +25,4 @@ firstSlidevs.start();
 - Adding images within the slides
 - Naming the downloads
 - Downloads to mobile devices
-- Controls password
+- More than 10 slides
