@@ -1,6 +1,4 @@
-/*
-    Slidevs front-end functionality, included during the build
-*/
+/* Slidevs front-end functionality, included during the build */
 
 $(document).ready(function() {
 
@@ -9,6 +7,7 @@ $(document).ready(function() {
         slides: $('.slidev'),
         totalSlides: $('.slidev').length,
         currentSlide: 0,
+        maySlide: true,
         isSliding: false,
         progress: $('.progress'),
         notes: [],
@@ -69,7 +68,7 @@ $(document).ready(function() {
             return (this.currentSlide < 1);
         },
         slide: function(direction) {
-            if (!this.isSliding && !this.noteIsOpen) {
+            if (!this.isSliding && !this.noteIsOpen && this.maySlide) {
                 var distance = parseInt(this.strip.css('left').replace('px', ''), 10);
                 switch(direction) {
                     case 'right':
@@ -118,6 +117,8 @@ $(document).ready(function() {
 
     // Socket
     if ($('input.socket-connection').length !== 0) {
+
+        slidevs.maySlide = false;
 
         var socket = slidevs.socket = io.connect($('input.socket-connection').val());
 
