@@ -129,6 +129,8 @@ $(document).ready(function() {
     // Socket
     if ($('input.socket-connection').length !== 0) {
 
+        slidevs.beingControlled = true;
+
         var socket = slidevs.socket = io.connect($('input.socket-connection').val());
 
         socket.on('askTotalSlides', function() {
