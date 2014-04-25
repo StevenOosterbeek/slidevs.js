@@ -90,7 +90,8 @@ function startSlidevs(slidevs) {
                 path.join(slidevs.thisFolder, slidevs.layout),
                 path.join(slidevs.thisFolder, slidevs.slidesFolder),
                 path.join(slidevs.thisFolder, slidevs.styling),
-                path.join(slidevs.thisFolder, slidevs.scriptsFolder)],
+                path.join(slidevs.thisFolder, slidevs.scriptsFolder),
+                path.join(slidevs.thisFolder, slidevs.imagesFolder)],
                 function() {
                     slidevs.start(slidevs);
                 });
@@ -101,15 +102,15 @@ function startSlidevs(slidevs) {
     ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
         else {
-            console.log('\n\nSLIDEVS.JS'.yellow + ' ------------------------------------------------------------------------------------\n'.grey);
+            console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------------------------------\n'.grey);
             if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
             else {
                 console.log('Your slidevs \'' + slidevs.name.bold + '\' has been created and is now up and running!\n');
                 console.log('Slidevs:', slidevLinks.slides.yellow);
                 if (slidevLinks.controls) console.log('Controls:', slidevLinks.controls.yellow);
-                console.log('\n(i) Saving changes made in the layout, slides, styling or script(s) will rebuild your Slidevs!');
+                console.log('\n(i) Saving changes made in the layout, slides, styling, images or script(s) will rebuild your Slidevs!');
             }
-            console.log('\n-----------------------------------------------------------------------------------------------\n\n'.grey);
+            console.log('\n-------------------------------------------------------------------------------------------------------\n\n'.grey);
         }
 
     });

@@ -15,7 +15,7 @@ var firstSlidevs = slidevs({
         imagesFolder: '/images', // Folder where all your images are located
         controls: {
             on: true, // Enable controls from any mobile device
-            password: 'slidevs' // Secure your Slidevs with a password
+            password: 'slidevs' // Secure your Slidevs controls with a password
         },
         progressBar: true, // Show a progress bar at the top of the screen
         port: 5000 // Port on which Slidevs starts the server

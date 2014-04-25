@@ -8,8 +8,8 @@ var firstSlidevs = slidevs({
         scriptsFolder: '/scripts',
         imagesFolder: '/images',
         controls: {
-            on: false,
-            password: false
+            on: true,
+            password: 'slidevs'
         },
         progressBar: true,
         port: 5000
