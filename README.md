@@ -24,5 +24,4 @@ firstSlidevs.start();
 
 #### Future fixes
 - Adding images within the slides
-- Naming the downloads
 - Downloads to mobile devices

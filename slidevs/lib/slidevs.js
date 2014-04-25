@@ -7,8 +7,8 @@ $(document).ready(function() {
         slides: $('.slidev'),
         totalSlides: $('.slidev').length,
         currentSlide: 0,
-        maySlide: true,
         isSliding: false,
+        beingControlled: false,
         progress: $('.progress'),
         notes: [],
         noteIsOpen: false,
@@ -67,22 +67,30 @@ $(document).ready(function() {
         isFirstSlide: function() {
             return (this.currentSlide < 1);
         },
-        slide: function(direction) {
-            if (!this.isSliding && !this.noteIsOpen && this.maySlide) {
-                var distance = parseInt(this.strip.css('left').replace('px', ''), 10);
+        slide: function(direction, controls) {
+
+            if (!this.isSliding && !this.noteIsOpen) {
+                if (this.beingControlled) {
+                    if (controls) executeSlide();
+                } else executeSlide();
+            }
+
+            function executeSlide() {
+
+                var distance = parseInt(slidevs.strip.css('left').replace('px', ''), 10);
                 switch(direction) {
                     case 'right':
-                        if(!this.isLastSlide()) {
-                            this.isSliding = true;
-                            distance -= this.getFrameWidth();
-                            this.currentSlide++;
+                        if(!slidevs.isLastSlide()) {
+                            slidevs.isSliding = true;
+                            distance -= slidevs.getFrameWidth();
+                            slidevs.currentSlide++;
                         }
                         break;
                     case 'left':
-                        if(!this.isFirstSlide()) {
-                            this.isSliding = true;
-                            distance += this.getFrameWidth();
-                            this.currentSlide--;
+                        if(!slidevs.isFirstSlide()) {
+                            slidevs.isSliding = true;
+                            distance += slidevs.getFrameWidth();
+                            slidevs.currentSlide--;
                         }
                         break;
                     default:
@@ -90,17 +98,20 @@ $(document).ready(function() {
                         console.warn('Slidevs does not know in which direction to slide!');
                 }
 
-                this.socket.emit('updateSlideNumber', {
-                    number: (slidevs.currentSlide + 1),
-                    first: slidevs.isFirstSlide(),
-                    last: slidevs.isLastSlide()
-                });
+                if (slidevs.socket !== null) {
+                    slidevs.socket.emit('updateSlideNumber', {
+                        number: (slidevs.currentSlide + 1),
+                        first: slidevs.isFirstSlide(),
+                        last: slidevs.isLastSlide()
+                    });
+                }
 
-                this.strip.css({ 'left' : distance });
-                this.adjustProgress();
+                slidevs.strip.css({ 'left' : distance });
+                slidevs.adjustProgress();
                 setTimeout(function() { slidevs.isSliding = false; }, 500); // Wait till the CSS animation is over
 
             }
+
         }
     };
 
@@ -118,8 +129,6 @@ $(document).ready(function() {
     // Socket
     if ($('input.socket-connection').length !== 0) {
 
-        slidevs.maySlide = false;
-
         var socket = slidevs.socket = io.connect($('input.socket-connection').val());
 
         socket.on('askTotalSlides', function() {
@@ -127,7 +136,7 @@ $(document).ready(function() {
         });
 
         socket.on('executeSlide', function(direction) {
-            slidevs.slide(direction);
+            slidevs.slide(direction, true);
         });
 
         socket.on('openNote', function() {
@@ -160,8 +169,20 @@ $(document).ready(function() {
         });
 
         socket.on('savedNote', function(note) {
-            document.location.href = note.replace('image/png', 'image/octet-stream');
-            socket.emit('recievedNote');
+            var link = document.createElement('a'), e,
+                date = new Date(), minutes = date.getMinutes().toString(), hours = date.getHours().toString(), day = date.getDate().toString(), month = (date.getMonth() + 1).toString(), year = date.getFullYear().toString();
+                imageDate = day + month + year + '_' + hours + '-' + minutes;
+            link.download = document.title.replace(' ', '').toLowerCase().trim() + '-note-' + (slidevs.currentSlide + 1) + '_' + imageDate + '.png';
+            link.href = note;
+            if (document.createEvent) {
+                e = document.createEvent('MouseEvents');
+                e.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                link.dispatchEvent(e);
+                socket.emit('recievedNote');
+            } else if (link.fireEvent) {
+                link.fireEvent('onclick');
+                socket.emit('recievedNote');
+            }
         });
 
         socket.on('refresh', function() {

@@ -241,7 +241,7 @@
                                             createdContext.fillStyle = '#FCFCFC';
                                             createdContext.fillRect(0, 0, $('.note-canvas').width(), $('.note-canvas').height());
 
-                                            socket.emit('savedNote', createdCanvas.toDataURL('image/jpeg;base64;'));
+                                            socket.emit('savedNote', createdCanvas.toDataURL('image/png;base64;'));
                                             noteControls.save.css({ 'opacity' : '.2' });
 
                                         },
