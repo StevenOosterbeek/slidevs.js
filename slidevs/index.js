@@ -2,6 +2,7 @@ var fs = require('fs'),
     os = require('os'),
     path = require('path'),
     es = require('event-stream'),
+    ncp = require('ncp'),
     rimraf = require('rimraf'),
     async = require('async'),
     watch = require('node-watch'),
@@ -21,7 +22,8 @@ function slidevs(userSettings) {
         layout: userSettings.layout ? userSettings.layout.toLowerCase().replace('.html', '').replace('/', '') + '.html' : 'main-layout.html',
         slidesFolder: userSettings.slidesFolder ? '/' + userSettings.slidesFolder.toLowerCase().replace(' ', '').replace('/', '') : '/slides',
         styling: userSettings.styling ? userSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
-        scriptsFolder: userSettings.scriptsFolder ? userSettings.scriptsFolder.toLowerCase().replace(' ', '') : '/scripts',
+        scriptsFolder: userSettings.scriptsFolder ? '/' + userSettings.scriptsFolder.toLowerCase().replace(' ', '').replace('/', '') : '/scripts',
+        imagesFolder: userSettings.imagesFolder ? '/' + userSettings.imagesFolder.toLowerCase().replace(' ', '').replace('/', '') : '/images',
         controls: typeof(userSettings.controls.on) === 'boolean' ? userSettings.controls.on : true,
         password: userSettings.controls.password.length !== 0 ? userSettings.controls.password : false,
         progressBar: typeof(userSettings.progressBar) === 'boolean' ? userSettings.progressBar : true,
@@ -53,11 +55,12 @@ function slidevs(userSettings) {
         slidesFolder: settings.slidesFolder,
         styling: settings.styling,
         scriptsFolder: settings.scriptsFolder,
+        imagesFolder: settings.imagesFolder,
         controls: settings.controls,
         password: settings.password,
         progressBar: settings.progressBar,
         port: settings.port,
-        socketPort: settings.port + 1,
+        socketPort: (settings.port + 1),
         address: settings.address,
 
         // Folders
@@ -127,6 +130,9 @@ function buildSlidevs(slidevs, startCallback) {
         },
         function(slidevs, buildCallback) {
             prepareScripts(slidevs, buildCallback);
+        },
+        function(slidevs, buildCallback) {
+            copyImages(slidevs, buildCallback);
         },
         function(slidevs, buildCallback) {
             concatSlidevs(slidevs, buildCallback);
@@ -419,6 +425,18 @@ function prepareScripts(slidevs, buildCallback) {
                 });
 
         }
+    });
+
+}
+
+function copyImages(slidevs, buildCallback) {
+
+    var userImages = path.join(slidevs.thisFolder, slidevs.imagesFolder),
+        imagesFolder = path.join(slidevs.slidevsFolder, 'images');
+
+    ncp(userImages, imagesFolder, function(err) {
+        if (err) showMessage('copying user images', err);
+        else buildCallback(null, slidevs);
     });
 
 }

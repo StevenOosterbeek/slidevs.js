@@ -11,9 +11,10 @@ var firstSlidevs = slidevs({
         slidesFolder: '/slides', // default
         styling: 'styling.css', // default
         scriptsFolder: '/scripts', // default
+        imagesFolder: '/images', // default
         controls: {
             on: true, // default
-            password: 'slidevs' // default is false
+            password: 'slidevs' // default is false - no auth required
         },
         progressBar: true, // default
         port: 5000 // default
@@ -23,5 +24,5 @@ firstSlidevs.start();
 ```
 
 #### Future fixes
-- Adding images within the slides
-- Downloads to mobile devices?
+- White bottom stroke on phone in landscape mode..
+- Download notes to mobile devices?

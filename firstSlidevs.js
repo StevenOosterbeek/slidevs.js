@@ -2,16 +2,17 @@ var slidevs = require('./slidevs');
 
 var firstSlidevs = slidevs({
         name: 'Steven Slidevs',
-        layout: 'main-layout', // default
-        slidesFolder: '/slides', // default
-        styling: 'styling.css', // default
-        scriptsFolder: '/scripts', // default
+        layout: 'main-layout',
+        slidesFolder: '/slides',
+        styling: 'styling.css',
+        scriptsFolder: '/scripts',
+        imagesFolder: '/images',
         controls: {
-            on: true, // default
-            password: false // default is false
+            on: false,
+            password: false
         },
-        progressBar: true, // default
-        port: 5000 // default
+        progressBar: true,
+        port: 5000
     });
 
 firstSlidevs.start();
