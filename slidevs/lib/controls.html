@@ -228,6 +228,7 @@
                                                 }
                                             },
                                             end: function() {
+                                                notes[slides.current].add(null, null); // End of line
                                                 this.isDrawing = false;
                                             }
                                         },
@@ -296,8 +297,8 @@
                                     var existingNote = notes[slides.current];
                                     for (var i = 0; i < existingNote.x.length; i++) {
                                         createdContext.beginPath();
-                                        createdContext.moveTo(existingNote.x[i-1], existingNote.y[i-1]);
-                                        createdContext.lineTo(existingNote.x[i] - 1, existingNote.y[i]);
+                                        if (existingNote.x[i-1] !== null && existingNote.y[i-1] !== null) createdContext.moveTo(existingNote.x[i-1], existingNote.y[i-1]);
+                                        if (existingNote.x[i] - 1 !== null && existingNote.y[i] !== null) createdContext.lineTo(existingNote.x[i] - 1, existingNote.y[i]);
                                         createdContext.closePath();
                                         createdContext.stroke();
                                     }
