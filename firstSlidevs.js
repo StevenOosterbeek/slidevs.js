@@ -8,7 +8,7 @@ var firstSlidevs = slidevs({
         scriptsFolder: '/scripts', // default
         controls: {
             on: true, // default
-            password: 'slidevs' // default is false
+            password: false // default is false
         },
         progressBar: true, // default
         port: 5000 // default

@@ -23,7 +23,6 @@ firstSlidevs.start();
 ```
 
 #### Future fixes
-- More than 10 slides
 - Adding images within the slides
 - Naming the downloads
 - Downloads to mobile devices
