@@ -1,10 +1,12 @@
-/*
-    Slidevs minimal required stylesheet, included during the build
-*/
+/* Slidevs minimal required stylesheet, included during the build */
 
-body {
+html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden !important;
+    position: relative !important;
 }
 
 .progress-bar {
@@ -17,14 +19,19 @@ body {
     background-color: #2F302C;
 }
 
-.progress {
-    height: 100%;
-    overflow: hidden;
-    background-color: rgba(255, 255, 255, .3);
+.progress, .slidevs-frame, .slidevs-strip, .note-canvas,
+.pass-check, .pass-button, .control-wrapper, .saved-message,
+.control, .slide-number, .connection {
     -webkit-transition: all ease-out .5s;
     -moz-transition: all ease-out .5s;
     -o-transition: all ease-out .5s;
     transition: all ease-out .5s;
+}
+
+.progress {
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, .3);
 }
 
 .slidevs-frame {
@@ -32,10 +39,6 @@ body {
     height: 100%;
     width: 100%;
     overflow: hidden;
-    -webkit-transition: all ease-out .5s;
-    -moz-transition: all ease-out .5s;
-    -o-transition: all ease-out .5s;
-    transition: all ease-out .5s;
     background-color: #474843;
 }
 
@@ -43,10 +46,6 @@ body {
     position: relative;
     height: 100%;
     left: 0;
-    -webkit-transition: all ease-out .5s;
-    -moz-transition: all ease-out .5s;
-    -o-transition: all ease-out .5s;
-    transition: all ease-out .5s;
 }
 
 .slidev {
@@ -68,10 +67,6 @@ body {
     height: 0;
     background-color: #FCFCFC;
     border-bottom: 2px solid #E4E4E4;
-    -webkit-transition: all ease-out .5s;
-    -moz-transition: all ease-out .5s;
-    -o-transition: all ease-out .5s;
-    transition: all ease-out .5s;
 }
 
 .note {
@@ -91,10 +86,6 @@ body.controls {
     height: 10em;
     padding: 1em;
     margin: 10% auto 0;
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .pass-check .heading {
@@ -124,19 +115,11 @@ body.controls {
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .control-wrapper {
     display: none;
     opacity: 0;
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .controls-wrapper, .control, .slide-number, .current-note, .connection, .note-tap, .saved-message, .pass-check {
@@ -170,10 +153,6 @@ body.controls {
     margin: 11% auto 0;
     background-color: #1DC64F;
     border: 1px solid #19A743;
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .controls-wrapper {
@@ -194,20 +173,12 @@ body.controls {
     text-transform: uppercase;
     border-bottom: 4px solid rgba(0, 0, 0, .2);
 
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .slide-number {
     width: 84%;
     padding: .8em;
     opacity: 0;
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .current-note {
@@ -229,10 +200,6 @@ body.controls {
     font-weight: bold;
     background-color: #F22323;
     border: 1px solid #A51818;
-    -webkit-transition: opacity ease-out .5s;
-    -moz-transition: opacity ease-out .5s;
-    -o-transition: opacity ease-out .5s;
-    transition: opacity ease-out .5s;
 }
 
 .orientation-warning {
@@ -389,25 +356,49 @@ body.controls {
         margin: 20% auto 0;
     }
 
+    .control-wrapper {
+        overflow: hidden;
+    }
+
     .controls-wrapper {
         position: static;
         margin: 5em auto 0;
-        width: 80%;
+        width: 70%;
+        right: auto;
+        bottom: auto;
     }
 
     .slide-number {
-        width: 91%;
+        width: 89%;
     }
 
     .connection {
         position: static;
+        right: auto;
+        bottom: auto;
         z-index: 1000;
-        width: 73%;
+        width: 62%;
         margin: -4.2em auto 0;
     }
 
-    .note-tap {
+    .note-canvas, .note-tap, .saved-message {
         display: none;
+    }
+
+    @media screen and (orientation:landscape) {
+        body.controls {
+            max-height: 100%;
+        }
+        .controls-wrapper {
+            margin-top: 9% !important;
+        }
+        .slide-number {
+            width: 93%;
+        }
+        .connection {
+            width: 65%;
+            margin: -4.3em auto 0;
+        }
     }
 
 }

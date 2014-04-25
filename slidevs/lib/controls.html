@@ -8,7 +8,7 @@
         [## Title ##]
 
         <meta name="description" content="Slidevs Controls - Control your Slidevs right from your mobile device">
-        <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui, user-scalable=no">
 
         [## Assets ##]
 
@@ -189,6 +189,10 @@
 
                             setTimeout(function() {
 
+                                document.body.addEventListener('touchmove',function(event) {
+                                    event.preventDefault();
+                                }, false);
+
                                 if(!createdCanvas) {
 
                                     var canvas = document.createElement('canvas');
@@ -251,6 +255,9 @@
                                             createdContext.clearRect(0, 0, createdContext.canvas.width, createdContext.canvas.height);
                                             noteControls.save.unbind('click');
                                             socket.emit('closeNote');
+                                            document.body.removeEventListener('touchmove', function(event) {
+                                                event.preventDefault();
+                                            }, false);
                                         }
 
                                     };
@@ -335,19 +342,11 @@
 
                     });
 
-                    document.body.addEventListener('touchmove',function(event) {
-                        event.preventDefault();
-                    }, false);
-
                     socket.on('refresh', function() {
                         location.reload(true);
                     });
 
-                } else {
-
-                    console.warn('No socket connection found!');
-
-                }
+                } else console.warn('No socket connection found!');
 
             });
 

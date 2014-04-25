@@ -26,4 +26,3 @@ firstSlidevs.start();
 - Adding images within the slides
 - Naming the downloads
 - Downloads to mobile devices
-- Optimize for mobile landscape
