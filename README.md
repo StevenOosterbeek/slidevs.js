@@ -3,9 +3,6 @@
 Slidevs.js is an open source presentation framework. Create a nice HTML5 browser presentation which can be controlled from your mobile phone or tablet by simply writing a main layout and each slide as a individual .html file. Further documentation will follow.
 
 ```javascript
-var slidevs = require('./slidevs');
-
-// All options are also default, except the name of course
 var slidevs = require('slidevs');
 
 var exampleSlidevs = slidevs({
