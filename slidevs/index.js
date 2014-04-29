@@ -1,10 +1,11 @@
-var fs = require('fs'),
-    os = require('os'),
+var os = require('os'),
     path = require('path'),
     es = require('event-stream'),
     ncp = require('ncp'),
     rimraf = require('rimraf'),
     async = require('async'),
+    promise = require('bluebird'),
+    fs = promise.promisifyAll(require('fs')),
     watch = require('node-watch'),
     express = require('express'),
     gulp = require('gulp'),
@@ -127,10 +128,27 @@ function buildSlidevs(slidevs, startCallback) {
             prepareSlides(slidevs, buildCallback);
         },
         function(slidevs, buildCallback) {
-            prepareStyling(slidevs, buildCallback);
+            var counter = 0,
+                fileLocations = {
+                    scripts: path.join(slidevs.slidevsFolder, 'slidevs.js'),
+                    styles: path.join(slidevs.slidevsFolder, 'slidevs.css')
+                };
+            for(var key in fileLocations) {
+                fs.writeFile(fileLocations[key], '', function(err) {
+                    if (err) showMessage('creating the slidevs' + key + ' file', err);
+                    counter++;
+                    if(counter === 2) buildCallback(null, fileLocations, slidevs);
+                });
+            }
         },
-        function(slidevs, buildCallback) {
-            prepareScripts(slidevs, buildCallback);
+        function(fileLocations, slidevs, buildCallback) {
+            prepareVendors(fileLocations, slidevs, buildCallback);
+        },
+        function(fileLocations, slidevs, buildCallback) {
+            prepareScripts(fileLocations, slidevs, buildCallback);
+        },
+        function(fileLocations, slidevs, buildCallback) {
+            prepareStyling(fileLocations, slidevs, buildCallback);
         },
         function(slidevs, buildCallback) {
             copyImages(slidevs, buildCallback);
@@ -186,18 +204,15 @@ function prepareSlides(slidevs, buildCallback) {
                     });
                     if(!slidesAreNumbered) showMessage('concatenating the slides', 'Could you please number your slides as following? > slide-1.html, slide-2.html');
                     else {
-
                         var concatSlides = function(prepareSlidesCallback) {
                             var slidesFile = path.join(tmpSlidesFolder, 'slides.html');
                             async.waterfall([
-                                // First part of slider elements
                                 function(slideConcatCallback) {
                                     fs.appendFile(slidesFile, '<div class="slidevs-frame">\n<div class="slidevs-strip">\n', function(err) {
                                         if (err) showMessage('appending the first elements of the slides container', err);
                                         else slideConcatCallback();
                                     });
                                 },
-                                // Slides
                                 function(slideConcatCallback) {
                                     slides.forEach(function(slide, index) {
                                         fs.readFile(path.join(tmpSlidesFolder, slide), 'utf-8', function(err, data) {
@@ -216,7 +231,6 @@ function prepareSlides(slidevs, buildCallback) {
                                         });
                                     });
                                 },
-                                // Last part of slider elements
                                 function(slideConcatCallback) {
                                     fs.appendFile(slidesFile, '\n</div>\n</div>', function(err) {
                                         if (err) showMessage('appending the last elements the slides container', err);
@@ -235,7 +249,6 @@ function prepareSlides(slidevs, buildCallback) {
 
                                 function(prepareSlidesCallback) {
 
-                                    // Sort slides in right order
                                     var goodOrder = [];
                                     slides.forEach(function(slide, index) {
                                         goodOrder[slide.replace('.html', '').split('-')[1]] = slide;
@@ -245,7 +258,6 @@ function prepareSlides(slidevs, buildCallback) {
                                 },
                                 function(goodOrder, prepareSlidesCallback) {
 
-                                    // Wrap up each slide in a single slidev wrapper element
                                     goodOrder.forEach(function(slide, index) {
 
                                         var slideFile = fs.createReadStream(path.join(slidevs.thisFolder, slidevs.slidesFolder, slide)),
@@ -254,7 +266,7 @@ function prepareSlides(slidevs, buildCallback) {
                                         slideFile
                                             .pipe(es.through(function(s) {
                                                 var slide = s.toString(),
-                                                    resultSlide = '\n<div class="slidev">\n<div class="note-canvas"></div>\n' + slide;
+                                                resultSlide = '\n<div class="slidev">\n<div class="note-canvas"></div>\n' + slide;
                                                 this.emit('data', resultSlide);
                                             }, function() {
                                                 this.emit('data', '\n</div>');
@@ -286,99 +298,64 @@ function prepareSlides(slidevs, buildCallback) {
             });
         }
     });
+
 }
 
-function prepareStyling(slidevs, buildCallback) {
+function prepareVendors(fileLocations, slidevs, buildCallback) {
 
-    var styling = path.join(slidevs.slidevsFolder, 'slidevstyling.css');
-    async.waterfall([
-        function(stylingConcatCallback) {
-
-            var slidevStyling = path.join(path.dirname(module.filename), '/lib/slidevs.css');
-            fs.readFile(slidevStyling, 'utf-8', function(err, data) {
-                if (err) showMessage('getting default slidevs styling', err);
-                else {
-                    fs.appendFile(styling, data, function(err) {
-                        if (err) showMessage('creating styling file', err);
-                        else stylingConcatCallback(null, slidevs);
-                    });
-                }
-            });
-
-        },
-        function(slidevs, stylingConcatCallback) {
-
-            var userStyling = path.join(slidevs.thisFolder, slidevs.styling);
-            fs.exists(userStyling, function(exists) {
-                if (!exists) {
-                    showMessage('creating the styling', 'Did you forget to add styling for the slidev?');
-                    stylingConcatCallback(null, slidevs);
-                } else {
-                    fs.readFile(userStyling, 'utf-8', function(err, data) {
-                        if (err) showMessage('getting users slidevs styling', err);
-                        else {
-                            fs.appendFile(styling, '\n\n' + data, function(err) {
-                                if (err) showMessage('adding user styling to styling file', err);
-                                else stylingConcatCallback(null, slidevs);
-                            });
-                        }
-                    });
-                }
-            });
-
-        }
-    ], function(err, slidevs) {
-        if (err) showMessage('styling async', err);
+    var vendorsLocation = path.join(path.dirname(module.filename), 'lib', 'vendor');
+    fs.readdir(vendorsLocation, function(err, vendorFiles) {
+        if (err) showMessage('reading the vendors folder', err);
         else {
-
-            // Minify styling
-            gulp.src(styling)
-                .pipe(minify())
-                .pipe(gulp.dest(slidevs.slidevsFolder))
-                .on('error', function(err) {
-                    showMessage('minifying styling', err);
-                })
-                .on('end', function() {
-                    buildCallback(null, slidevs);
-                });
-
+            vendorFiles.forEach(function(vendorFile, index) {
+                if (vendorFile !== '.DS_Store') {
+                    var finalFile, fileType = vendorFile.substr((vendorFile.length - 3), 3);
+                    switch(fileType) {
+                        case '.js': finalFile = fileLocations.scripts; break;
+                        case 'css': finalFile = fileLocations.styles; break;
+                        default: finalFile = false;
+                    }
+                    if(!finalFile) showMessage('preparing vendor files', 'There seems to be an unsupported file type within the vendor folder. Only .js and .css allowed.');
+                    else {
+                        fs.readFile(path.join(vendorsLocation, vendorFile), 'utf-8', function(err, data) {
+                            if (err) showMessage('reading a vendor file', err);
+                            else {
+                                fs.appendFile(finalFile, (data.toString() + '\n'), function(err) {
+                                    if (err) showMessage('adding a vendor file to the final file', err);
+                                    else if ((index + 1) === vendorFiles.length) buildCallback(null, fileLocations, slidevs);
+                                });
+                            }
+                        });
+                    }
+                }
+            });
         }
     });
 
 }
 
-function prepareScripts(slidevs, buildCallback) {
+function prepareScripts(fileLocations, slidevs, buildCallback) {
 
-    var slidevScriptFile = path.join(slidevs.slidevsFolder, 'slidevs.js'),
+    var scriptsFile = fileLocations.scripts, filesLocation,
         addScripts = function(which, slidevs, scriptsConcatCallback) {
-
-            var filesLocation;
             switch(which) {
-                case 'vendor': filesLocation = path.join(path.dirname(module.filename), 'lib', 'vendor'); break;
                 case 'slidevs': filesLocation = path.join(path.dirname(module.filename), 'lib'); break;
                 case 'user': filesLocation = path.join(slidevs.thisFolder, slidevs.scriptsFolder); break;
-                default: showMessage('adding scripts switch', 'Switch does not recognize which scripts to get!');
+                default: showMessage('the adding scripts switch', 'Switch does not recognize which scripts to get?');
             }
-
             fs.readdir(filesLocation, function(err, scripts) {
                 if (err) showMessage('reading ' + which + ' scripts folder', err);
                 else {
                     var finalFiles = scripts, removed = 0;
-                    scripts.forEach(function(script, index) {
-
-                        // Remove folders first
-                        if (script.split('.').length === 1) {
-                            finalFiles.splice(index, 1);
-                            removed++;
-                        }
-
+                    scripts.forEach(function(readScript, index) {
+                        if (readScript.split('.').length === 1) { finalFiles.splice(index, 1); removed++; } // Remove folders first
                         if ((index + 1) - removed === finalFiles.length) {
                             finalFiles.forEach(function(readScript, index) {
                                 if (readScript !== '.DS_Store' && readScript.substr((readScript.length - 2), 2) === 'js' && readScript.substr(0, 8) !== 'controls') {
                                     fs.readFile(path.join(filesLocation, readScript), 'utf-8', function(err, data) {
                                         if (err) showMessage('getting a ' + which + ' script for concatenation', err);
                                         else {
-                                            fs.appendFile(slidevScriptFile, (data.toString() + '\n'), function(err) {
+                                            fs.appendFile(scriptsFile, (data.toString() + '\n'), function(err) {
                                                 if (err) showMessage('adding ' + which + ' script to temporary slidevs.js file', err);
                                                 else if ((index + 1) === finalFiles.length) scriptsConcatCallback(null, slidevs);
                                             });
@@ -387,24 +364,13 @@ function prepareScripts(slidevs, buildCallback) {
                                 }
                             });
                         }
-
                     });
                 }
             });
-
         };
 
     async.waterfall([
         function(scriptsConcatCallback) {
-            fs.writeFile(slidevScriptFile, '', function(err) {
-                if (err) showMessage('creating the slidev.js file', err);
-                else scriptsConcatCallback(null, slidevs);
-            });
-        },
-        function(slidevs, scriptsConcatCallback) {
-            addScripts('vendor', slidevs, scriptsConcatCallback);
-        },
-        function(slidevs, scriptsConcatCallback) {
             addScripts('slidevs', slidevs, scriptsConcatCallback);
         },
         function(slidevs, scriptsConcatCallback) {
@@ -413,18 +379,67 @@ function prepareScripts(slidevs, buildCallback) {
     ], function(err, slidevs) {
         if (err) showMessage('scripts async', err);
         else {
-
-            // Minify front-end script
-            gulp.src(slidevScriptFile)
+            gulp.src(scriptsFile)
                 .pipe(uglify({ mangle: false }))
                 .pipe(gulp.dest(slidevs.slidevsFolder))
                 .on('error', function(err) {
                     showMessage('minifying front-end script', err);
                 })
                 .on('end', function() {
+                    buildCallback(null, fileLocations, slidevs);
+                });
+        }
+    });
+
+}
+
+function prepareStyling(fileLocations, slidevs, buildCallback) {
+
+    var stylingFile = fileLocations.styles;
+    async.waterfall([
+        function(stylingConcatCallback) {
+            var slidevStyling = path.join(path.dirname(module.filename), '/lib/slidevs.css');
+            fs.readFile(slidevStyling, 'utf-8', function(err, data) {
+                if (err) showMessage('getting default slidevs styling', err);
+                else {
+                    fs.appendFile(stylingFile, data, function(err) {
+                        if (err) showMessage('creating styling file', err);
+                        else stylingConcatCallback(null, slidevs);
+                    });
+                }
+            });
+        },
+        function(slidevs, stylingConcatCallback) {
+            var userStyling = path.join(slidevs.thisFolder, slidevs.styling);
+            fs.exists(userStyling, function(exists) {
+                if (!exists) {
+                    showMessage('creating the styling', 'Did you forget you can add styling for your Slidev?');
+                    stylingConcatCallback(null, slidevs);
+                } else {
+                    fs.readFile(userStyling, 'utf-8', function(err, data) {
+                        if (err) showMessage('getting users slidevs styling', err);
+                        else {
+                            fs.appendFile(stylingFile, '\n\n' + data, function(err) {
+                                if (err) showMessage('adding user styling to styling file', err);
+                                else stylingConcatCallback(null, slidevs);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    ], function(err, slidevs) {
+        if (err) showMessage('styling async', err);
+        else {
+            gulp.src(stylingFile)
+                .pipe(minify())
+                .pipe(gulp.dest(slidevs.slidevsFolder))
+                .on('error', function(err) {
+                    showMessage('minifying styling', err);
+                })
+                .on('end', function() {
                     buildCallback(null, slidevs);
                 });
-
         }
     });
 
@@ -459,7 +474,7 @@ function concatSlidevs(slidevs, buildCallback) {
                     if (line.indexOf('t') === 2) line = '<html class="no-js">';
                     if (line.indexOf('i') === 2) line = '<title>' + slidevs.name + '</title>';
                     if (line.indexOf('[## Assets ##]') > -1) {
-                        line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="slidevs.js"></script>';
+                        line = '<link rel="stylesheet" type="text/css" href="slidevs.css" />\n<script type="text/javascript" src="slidevs.js"></script>';
                         if (slidevs.controls) line += '\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>';
                     }
                     if (line.indexOf('[## Slidevs ##]') > -1) {
@@ -530,7 +545,7 @@ function checkControls(slidevs, buildCallback) {
                     .pipe(es.mapSync(function(line) {
                         line = line[0].trim();
                         if (line.indexOf('[## Title ##]') > -1) line = '<title>' + slidevs.name + ' - Controls</title>';
-                        if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevstyling.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>\n<script type="text/javascript" src="/' + jqueryFile + '"></script>';
+                        if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevs.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>\n<script type="text/javascript" src="/' + jqueryFile + '"></script>';
                         if (line.indexOf('[## Password-check ##]') > -1) {
                             if (slidevs.password && !slidevs.isRunning()) line = '<div class="pass-check">\n<span class="heading">Password required</span>\n<input type="password" class="pass-input" />\n<div class="pass-button">Let me control!</div>\n</div>';
                             else line = '';
