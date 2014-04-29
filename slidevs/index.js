@@ -395,53 +395,16 @@ function prepareScripts(fileLocations, slidevs, buildCallback) {
 
 function prepareStyling(fileLocations, slidevs, buildCallback) {
 
-    var stylingFile = fileLocations.styles;
-    async.waterfall([
-        function(stylingConcatCallback) {
-            var slidevStyling = path.join(path.dirname(module.filename), '/lib/slidevs.css');
-            fs.readFile(slidevStyling, 'utf-8', function(err, data) {
-                if (err) showMessage('getting default slidevs styling', err);
-                else {
-                    fs.appendFile(stylingFile, data, function(err) {
-                        if (err) showMessage('creating styling file', err);
-                        else stylingConcatCallback(null, slidevs);
-                    });
-                }
-            });
-        },
-        function(slidevs, stylingConcatCallback) {
-            var userStyling = path.join(slidevs.thisFolder, slidevs.styling);
-            fs.exists(userStyling, function(exists) {
-                if (!exists) {
-                    showMessage('creating the styling', 'Did you forget you can add styling for your Slidev?');
-                    stylingConcatCallback(null, slidevs);
-                } else {
-                    fs.readFile(userStyling, 'utf-8', function(err, data) {
-                        if (err) showMessage('getting users slidevs styling', err);
-                        else {
-                            fs.appendFile(stylingFile, '\n\n' + data, function(err) {
-                                if (err) showMessage('adding user styling to styling file', err);
-                                else stylingConcatCallback(null, slidevs);
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    ], function(err, slidevs) {
-        if (err) showMessage('styling async', err);
-        else {
-            gulp.src(stylingFile)
-                .pipe(minify())
-                .pipe(gulp.dest(slidevs.slidevsFolder))
-                .on('error', function(err) {
-                    showMessage('minifying styling', err);
-                })
-                .on('end', function() {
-                    buildCallback(null, slidevs);
-                });
-        }
-    });
+    gulp.src([path.join(path.dirname(module.filename), '/lib/slidevs.css'), path.join(slidevs.thisFolder, slidevs.styling)])
+        .pipe(minify())
+        .pipe(concat('slidevs.css'))
+        .pipe(gulp.dest(slidevs.slidevsFolder))
+        .on('error', function(err) {
+            showMessage('concatenating and minifying styling', err);
+        })
+        .on('end', function() {
+            buildCallback(null, slidevs);
+        });
 
 }
 
@@ -478,10 +441,9 @@ function concatSlidevs(slidevs, buildCallback) {
                         if (slidevs.controls) line += '\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>';
                     }
                     if (line.indexOf('[## Slidevs ##]') > -1) {
-                        if(slidevs.progressBar) {
-                            line = '<div class="progress-bar"><div class="progress"></div></div>\n\n' + slides;
-                            if(slidevs.controls) line = '<input type="hidden" name="socket-connection" class="socket-connection" value="' + slidevs.address + ':' + slidevs.port + '" />\n' + line;
-                        } else line = slides;
+                        if (slidevs.progressBar) line = '<div class="progress-bar"><div class="progress"></div></div>\n\n';
+                        if (slidevs.controls) line += '<input type="hidden" name="socket-connection" class="socket-connection" value="' + slidevs.address + ':' + slidevs.port + '" />\n' + slides;
+                        else line += slides;
                     }
                     return line;
                 }))
@@ -554,7 +516,7 @@ function checkControls(slidevs, buildCallback) {
                 });
             }
         ], function(err, slidevs) {
-            if (err) showMessage('scripts async', err);
+            if (err) showMessage('controls async', err);
             else buildCallback(null, slidevs);
         });
 
@@ -588,6 +550,7 @@ function createSlidevServer(slidevs, startCallback) {
 
         // Slidevs including controls
         require('./lib/controls-server')(uris, slidevs);
+
     }
 
     startCallback(null, slidevs, links, false);
