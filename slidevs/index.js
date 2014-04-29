@@ -1,16 +1,16 @@
-var os = require('os'),
+var fs = require('fs'),
+    os = require('os'),
     path = require('path'),
     es = require('event-stream'),
     ncp = require('ncp'),
     rimraf = require('rimraf'),
     async = require('async'),
-    promise = require('bluebird'),
-    fs = promise.promisifyAll(require('fs')),
     watch = require('node-watch'),
     express = require('express'),
     gulp = require('gulp'),
     minify = require('gulp-minify-css'),
     uglify = require('gulp-uglify'),
+    concat = require('gulp-concat'),
     colors = require('colors');
 
 module.exports = slidevs;
@@ -506,46 +506,36 @@ function checkControls(slidevs, buildCallback) {
 
     if(slidevs.controls) {
 
-        var controlsFile = path.join(path.dirname(module.filename), 'lib', 'controls.html'),
-            finalControlsFile = path.join(slidevs.slidevsFolder, 'controls.html'),
-            vendorScriptsFolder = path.join(path.dirname(module.filename), 'lib', 'vendor'),
-            jqueryFile;
-
         async.waterfall([
             function(controlsCallback) {
-                fs.readdir(vendorScriptsFolder, function(err, scripts) {
+                fs.readdir(path.join(path.dirname(module.filename), 'lib', 'vendor'), function(err, scripts) {
                     if (err) showMessage('reading vendor scripts folder for getting jquery', err);
                     else {
                         scripts.forEach(function(scriptName) {
                             if (scriptName.split('-')[0] === 'jquery') {
-                                jqueryFile = scriptName;
-                                fs.writeFile(path.join(slidevs.slidevsFolder, scriptName), '', function(err) {
-                                    if (err) showMessage('creating the front-end jquery file', err);
-                                    else {
-                                        fs.readFile(path.join(vendorScriptsFolder, scriptName), 'utf-8', function(err, data) {
-                                            if (err) showMessage('getting jquery file', err);
-                                            else {
-                                                fs.appendFile(path.join(slidevs.slidevsFolder, scriptName), (data.toString() + '\n'), function(err) {
-                                                    if (err) showMessage('appending jquery to jquery front-end file', err);
-                                                    else controlsCallback(null, slidevs);
-                                                });
-                                            }
-                                        });
-                                    }
-                                });
+                                gulp.src([path.join(path.dirname(module.filename), 'lib', 'vendor', scriptName), path.join(path.dirname(module.filename), 'lib', 'controls.js')])
+                                    .pipe(uglify({ mangle: false }))
+                                    .pipe(concat('controls.js'))
+                                    .pipe(gulp.dest(slidevs.slidevsFolder))
+                                    .on('error', function(err) {
+                                        showMessage('minifying front-end controls script', err);
+                                    })
+                                    .on('end', function() {
+                                        controlsCallback(null, slidevs);
+                                    });
                             }
                         });
                     }
                 });
             },
             function(slidevs, controlsCallback) {
-                (fs.createReadStream(controlsFile))
+                (fs.createReadStream(path.join(path.dirname(module.filename), 'lib', 'controls.html')))
                     .pipe(es.split('\n'))
                     .pipe(es.mapSync(function(line) { return line.split('\t'); }))
                     .pipe(es.mapSync(function(line) {
                         line = line[0].trim();
                         if (line.indexOf('[## Title ##]') > -1) line = '<title>' + slidevs.name + ' - Controls</title>';
-                        if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevs.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>\n<script type="text/javascript" src="/' + jqueryFile + '"></script>';
+                        if (line.indexOf('[## Assets ##]') > -1) line = '<link rel="stylesheet" type="text/css" href="slidevs.css" />\n<script type="text/javascript" src="/socket.io/socket.io.js"></script>\n<script type="text/javascript" src="/controls.js"></script>';
                         if (line.indexOf('[## Password-check ##]') > -1) {
                             if (slidevs.password && !slidevs.isRunning()) line = '<div class="pass-check">\n<span class="heading">Password required</span>\n<input type="password" class="pass-input" />\n<div class="pass-button">Let me control!</div>\n</div>';
                             else line = '';
@@ -555,7 +545,7 @@ function checkControls(slidevs, buildCallback) {
                     }))
                     .pipe(es.join('\n'))
                     .pipe(es.wait())
-                .pipe(fs.createWriteStream(finalControlsFile))
+                .pipe(fs.createWriteStream(path.join(slidevs.slidevsFolder, 'controls.html')))
                 .on('error', function(err) {
                     showMessage('copying controls file', err);
                 })
@@ -597,7 +587,7 @@ function createSlidevServer(slidevs, startCallback) {
     } else {
 
         // Slidevs including controls
-        require('./lib/controls')(uris, slidevs);
+        require('./lib/controls-server')(uris, slidevs);
     }
 
     startCallback(null, slidevs, links, false);

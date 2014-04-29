@@ -1,7 +1,7 @@
 var slidevs = require('./slidevs');
 
 var firstSlidevs = slidevs({
-        name: 'Stephanie Slidevs',
+        name: 'Steven Slidevs',
         layout: 'main-layout',
         slidesFolder: '/slides',
         styling: 'styling.css',
