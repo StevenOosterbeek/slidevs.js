@@ -25,5 +25,6 @@ firstSlidevs.start();
 ```
 
 #### Future fixes
+- Cross browser testing
 - White bottom stroke on phone in landscape mode..
 - Download notes to mobile devices?
