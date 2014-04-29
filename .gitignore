@@ -10,5 +10,5 @@ pids
 # Dependency directory
 node_modules
 
-# Created hidden folder for the slidevs presentation
+# Created hidden folder for the Slidevs presentation
 .slidevs

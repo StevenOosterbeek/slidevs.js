@@ -17,6 +17,7 @@ module.exports = slidevs;
 
 function slidevs(userSettings) {
 
+    userSettings = userSettings ? userSettings : {};
     settings = {
 
         name: userSettings.name ? userSettings.name : 'Slidevs Presentation',
@@ -25,13 +26,13 @@ function slidevs(userSettings) {
         styling: userSettings.styling ? userSettings.styling.toLowerCase().replace('.css', '').replace('/', '') + '.css' : 'styling.css',
         scriptsFolder: userSettings.scriptsFolder ? '/' + userSettings.scriptsFolder.toLowerCase().replace(' ', '').replace('/', '') : '/scripts',
         imagesFolder: userSettings.imagesFolder ? '/' + userSettings.imagesFolder.toLowerCase().replace(' ', '').replace('/', '') : '/images',
-        controls: typeof(userSettings.controls.on) === 'boolean' ? userSettings.controls.on : true,
-        password: userSettings.controls.password.length !== 0 ? userSettings.controls.password : false,
+        controls: userSettings.controls ? (typeof(userSettings.controls.on) === 'boolean' ? userSettings.controls.on : true) : true,
+        password: userSettings.controls ? (userSettings.controls.password.length !== 0 ? userSettings.controls.password : false) : false,
         progressBar: typeof(userSettings.progressBar) === 'boolean' ? userSettings.progressBar : true,
         port: userSettings.port || 5000,
         address: (os.networkInterfaces().en1 !== undefined ? os.networkInterfaces().en1[1].address : 'http://localhost'),
         thisFolder: path.dirname(module.parent.filename),
-        slidevsFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
+        hiddenFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
         running: false
 
     };
@@ -66,7 +67,7 @@ function slidevs(userSettings) {
 
         // Folders
         thisFolder: settings.thisFolder,
-        slidevsFolder: settings.slidevsFolder
+        hiddenFolder: settings.hiddenFolder
 
     };
 
@@ -74,8 +75,8 @@ function slidevs(userSettings) {
 
 function startSlidevs(slidevs) {
 
-    if (slidevs.isRunning()) console.log('\n## Rebuilding your slidevs started\n'.yellow);
-    else console.log('\n## Building your slidevs started\n'.yellow);
+    console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------------------------------\n'.grey);
+    console.log((slidevs.isRunning() ? 'Rebuilding' : 'Building') + ' your slidevs \'' + slidevs.name.bold + '\' started..' + (slidevs.controls ? (slidevs.isRunning() ? '' : '\n') : ''));
 
     async.waterfall([
         function(startCallback) {
@@ -103,13 +104,13 @@ function startSlidevs(slidevs) {
     ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
         else {
-            console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------------------------------\n'.grey);
-            if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been updated with your changes!');
+            console.log((slidevs.controls ? '\n' : '') + '-------------------------------------------------------------------------------------------------------\n'.grey);
+            if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been rebuild with your changes!');
             else {
                 console.log('Your slidevs \'' + slidevs.name.bold + '\' has been created and is now up and running!\n');
                 console.log('Slidevs:', slidevLinks.slides.yellow);
                 if (slidevLinks.controls) console.log('Controls:', slidevLinks.controls.yellow);
-                console.log('\n(i) Saving changes made in the layout, slides, styling, images or script(s) will rebuild your Slidevs!');
+                console.log('\n(i)'.bold + ' Saving changes made in the layout, slides, styling, images or script(s) will rebuild your Slidevs!');
             }
             console.log('\n-------------------------------------------------------------------------------------------------------\n\n'.grey);
         }
@@ -130,8 +131,8 @@ function buildSlidevs(slidevs, startCallback) {
         function(slidevs, buildCallback) {
             var counter = 0,
                 fileLocations = {
-                    scripts: path.join(slidevs.slidevsFolder, 'slidevs.js'),
-                    styles: path.join(slidevs.slidevsFolder, 'slidevs.css')
+                    scripts: path.join(slidevs.hiddenFolder, 'slidevs.js'),
+                    styles: path.join(slidevs.hiddenFolder, 'slidevs.css')
                 };
             for(var key in fileLocations) {
                 fs.writeFile(fileLocations[key], '', function(err) {
@@ -169,15 +170,15 @@ function buildSlidevs(slidevs, startCallback) {
 function checkSlidevsFolder(slidevs, buildCallback) {
 
     function createSlidevsFolder() {
-        fs.mkdir(slidevs.slidevsFolder, [], function(err) {
+        fs.mkdir(slidevs.hiddenFolder, [], function(err) {
             if (err) showMessage('creating a hidden slidevs folder', err);
             else buildCallback(null, slidevs);
         });
     }
 
-    fs.exists(slidevs.slidevsFolder, function(exists) {
+    fs.exists(slidevs.hiddenFolder, function(exists) {
         if (exists) {
-            rimraf(slidevs.slidevsFolder, function(err) {
+            rimraf(slidevs.hiddenFolder, function(err) {
                 if (err) showMessage('deleting the hidden slidevs folder', err);
                 createSlidevsFolder();
             });
@@ -188,7 +189,7 @@ function checkSlidevsFolder(slidevs, buildCallback) {
 
 function prepareSlides(slidevs, buildCallback) {
 
-    var tmpSlidesFolder = path.join(slidevs.slidevsFolder, '.slides-tmp');
+    var tmpSlidesFolder = path.join(slidevs.hiddenFolder, '.slides-tmp');
     fs.mkdir(tmpSlidesFolder, 0777, function(err) {
         if (err) showMessage('creating hidden slides folder', err);
         else {
@@ -197,10 +198,12 @@ function prepareSlides(slidevs, buildCallback) {
                 if (slides.length < 2) showMessage('concatenating the slides', 'You need at least two slides!');
                 else {
                     var slidesAreNumbered = true;
-                    slides.forEach(function(slide) {
-                        var fileName = slide.replace('.html', ''),
-                            isNumbered = /^[0-9]/.test(fileName[fileName.length - 1]);
-                        if (!isNumbered) slidesAreNumbered = false;
+                    slides.forEach(function(slide, index) {
+                        if (slide !== '.DS_Store') {
+                            var fileName = slide.replace('.html', ''),
+                                isNumbered = /^[0-9]/.test(fileName[fileName.length - 1]);
+                            if (!isNumbered) slidesAreNumbered = false;
+                        } else slides.splice(index, 1);
                     });
                     if(!slidesAreNumbered) showMessage('concatenating the slides', 'Could you please number your slides as following? > slide-1.html, slide-2.html');
                     else {
@@ -381,7 +384,7 @@ function prepareScripts(fileLocations, slidevs, buildCallback) {
         else {
             gulp.src(scriptsFile)
                 .pipe(uglify({ mangle: false }))
-                .pipe(gulp.dest(slidevs.slidevsFolder))
+                .pipe(gulp.dest(slidevs.hiddenFolder))
                 .on('error', function(err) {
                     showMessage('minifying front-end script', err);
                 })
@@ -398,7 +401,7 @@ function prepareStyling(fileLocations, slidevs, buildCallback) {
     gulp.src([path.join(path.dirname(module.filename), '/lib/slidevs.css'), path.join(slidevs.thisFolder, slidevs.styling)])
         .pipe(minify())
         .pipe(concat('slidevs.css'))
-        .pipe(gulp.dest(slidevs.slidevsFolder))
+        .pipe(gulp.dest(slidevs.hiddenFolder))
         .on('error', function(err) {
             showMessage('concatenating and minifying styling', err);
         })
@@ -411,7 +414,7 @@ function prepareStyling(fileLocations, slidevs, buildCallback) {
 function copyImages(slidevs, buildCallback) {
 
     var userImages = path.join(slidevs.thisFolder, slidevs.imagesFolder),
-        imagesFolder = path.join(slidevs.slidevsFolder, 'images');
+        imagesFolder = path.join(slidevs.hiddenFolder, 'images');
 
     ncp(userImages, imagesFolder, function(err) {
         if (err) showMessage('copying user images', err);
@@ -423,9 +426,9 @@ function copyImages(slidevs, buildCallback) {
 function concatSlidevs(slidevs, buildCallback) {
 
     var layout = fs.createReadStream(path.join(slidevs.thisFolder, slidevs.layout)),
-        slidevsIndex = fs.createWriteStream(path.join(slidevs.slidevsFolder, 'slidevs.html'));
+        slidevsIndex = fs.createWriteStream(path.join(slidevs.hiddenFolder, 'slidevs.html'));
 
-    fs.readFile(path.join(slidevs.slidevsFolder, '.slides-tmp', 'slides.html'), 'utf-8', function(err, slides) {
+    fs.readFile(path.join(slidevs.hiddenFolder, '.slides-tmp', 'slides.html'), 'utf-8', function(err, slides) {
         if (err) showMessage('getting concatenated slides', err);
         else {
             layout.pipe(es.split('\n'))
@@ -454,7 +457,7 @@ function concatSlidevs(slidevs, buildCallback) {
                     showMessage('importing slides', error);
                 })
                 .on('finish', function() {
-                    rimraf(path.join(slidevs.slidevsFolder, '.slides-tmp'), function(err) {
+                    rimraf(path.join(slidevs.hiddenFolder, '.slides-tmp'), function(err) {
                         if (err) showMessage('removing temporary slides folder', err);
                         else buildCallback(null, slidevs);
                     });
@@ -478,7 +481,7 @@ function checkControls(slidevs, buildCallback) {
                                 gulp.src([path.join(path.dirname(module.filename), 'lib', 'vendor', scriptName), path.join(path.dirname(module.filename), 'lib', 'controls.js')])
                                     .pipe(uglify({ mangle: false }))
                                     .pipe(concat('controls.js'))
-                                    .pipe(gulp.dest(slidevs.slidevsFolder))
+                                    .pipe(gulp.dest(slidevs.hiddenFolder))
                                     .on('error', function(err) {
                                         showMessage('minifying front-end controls script', err);
                                     })
@@ -507,7 +510,7 @@ function checkControls(slidevs, buildCallback) {
                     }))
                     .pipe(es.join('\n'))
                     .pipe(es.wait())
-                .pipe(fs.createWriteStream(path.join(slidevs.slidevsFolder, 'controls.html')))
+                .pipe(fs.createWriteStream(path.join(slidevs.hiddenFolder, 'controls.html')))
                 .on('error', function(err) {
                     showMessage('copying controls file', err);
                 })
@@ -539,9 +542,9 @@ function createSlidevServer(slidevs, startCallback) {
 
         // Slidevs only
         var app = express();
-        app.use(express.static(slidevs.slidevsFolder));
+        app.use(express.static(slidevs.hiddenFolder));
         app.get(uris.slides, function(req, res) {
-            res.sendfile(slidevs.slidevsFolder + '/slidevs.html');
+            res.sendfile(slidevs.hiddenFolder + '/slidevs.html');
         });
         app.listen(slidevs.port);
         slidevs.isNowRunning();

@@ -1,10 +1,10 @@
 {
   "name": "slidevs",
   "version": "0.1.0",
-  "description": "An open source presentation framework",
+  "description": "Presentation framework which allows his user to create a nice HTML5 browser presentation and let him control this presentation extremely easily from any mobile device.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha -R spec ./test/test.slidevs.js"
   },
   "repository": {
     "type": "git",
@@ -13,8 +13,10 @@
   "keywords": [
     "presentation",
     "framework",
+    "slidevs",
     "slide",
     "slides",
+    "control",
     "controls"
   ],
   "author": "Steven Oosterbeek <smile@stevenoosterbeek.nl>",
@@ -36,5 +38,13 @@
     "gulp-minify-css": "~0.3.1",
     "ncp": "~0.5.1",
     "gulp-concat": "~2.2.0"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*",
+    "sinon": "*"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
   }
 }

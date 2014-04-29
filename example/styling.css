@@ -1,5 +1,5 @@
 /*
-    You can add your own styling for the slides here!
+    You can add your own styling for the slides in this file.
 */
 
 body {
@@ -23,7 +23,11 @@ p {
     text-align: center;
     line-height: 1.5em;
     color: white;
-    text-shadow: rgba(0 ,0 ,0 ,.3) 0 2px 0;
+    text-shadow: rgba(0,0,0,.3) 0 2px 0;
+}
+
+a, a:hover, a:active, a:visited {
+    color: white;
 }
 
 /* You can overwrite the colours of the progress bar as you wish */
