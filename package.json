@@ -4,7 +4,7 @@
   "description": "Presentation framework which allows his user to create a nice HTML5 browser presentation and let him control this presentation extremely easily from any mobile device.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha -R spec ./test/test.slidevs.js"
+    "test": "./node_modules/.bin/mocha -R spec -w ./test/test.slidevs.js"
   },
   "repository": {
     "type": "git",

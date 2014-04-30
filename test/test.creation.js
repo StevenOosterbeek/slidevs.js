@@ -1,4 +1,4 @@
-module.exports = function(slidevs, expect, should, sinon) {
+module.exports = function(slidevs, expect, should) {
 
     describe('Creating a new Slidevs', function() {
 
@@ -103,6 +103,13 @@ module.exports = function(slidevs, expect, should, sinon) {
                 goodAddress = (require('os').networkInterfaces().en1 !== undefined ? require('os').networkInterfaces().en1[1].address : 'http://localhost');
 
             testSlidevs.address.should.equal(goodAddress);
+
+        });
+
+        it('Should say the Slidevs is not running (yet)', function() {
+
+            var testSlidevs = slidevs();
+            expect(testSlidevs.isRunning()).to.equal(false);
 
         });
 

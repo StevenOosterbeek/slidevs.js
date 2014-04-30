@@ -33,7 +33,8 @@ function slidevs(userSettings) {
         address: (os.networkInterfaces().en1 !== undefined ? os.networkInterfaces().en1[1].address : 'http://localhost'),
         thisFolder: path.dirname(module.parent.filename),
         hiddenFolder: path.join(path.dirname(module.parent.filename), '.slidevs'),
-        running: false
+        running: false,
+        logging: typeof(userSettings.logging) === 'boolean' ? userSettings.logging : true
 
     };
 
@@ -67,7 +68,10 @@ function slidevs(userSettings) {
 
         // Folders
         thisFolder: settings.thisFolder,
-        hiddenFolder: settings.hiddenFolder
+        hiddenFolder: settings.hiddenFolder,
+
+        // Logging (testing)
+        logging: settings.logging
 
     };
 
@@ -75,8 +79,10 @@ function slidevs(userSettings) {
 
 function startSlidevs(slidevs) {
 
-    console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------------------------------\n'.grey);
-    console.log((slidevs.isRunning() ? 'Rebuilding' : 'Building') + ' your slidevs \'' + slidevs.name.bold + '\' started..' + (slidevs.controls ? (slidevs.isRunning() ? '' : '\n') : ''));
+    if(slidevs.logging) {
+        console.log('\n\nSLIDEVS.JS'.yellow + ' --------------------------------------------------------------------------------------------\n'.grey);
+        console.log((slidevs.isRunning() ? 'Rebuilding' : 'Building') + ' your slidevs \'' + slidevs.name.bold + '\' started..' + (slidevs.controls ? (slidevs.isRunning() ? '' : '\n') : ''));
+    }
 
     async.waterfall([
         function(startCallback) {
@@ -103,7 +109,7 @@ function startSlidevs(slidevs) {
         }
     ], function(err, slidevLinks, alreadyRunning) {
         if (err) showMessage('start async', err);
-        else {
+        else if (slidevs.logging) {
             console.log((slidevs.controls ? '\n' : '') + '-------------------------------------------------------------------------------------------------------\n'.grey);
             if (alreadyRunning) console.log('Your slidev \'' + slidevs.name.bold + '\' has been rebuild with your changes!');
             else {
@@ -560,9 +566,22 @@ function createSlidevServer(slidevs, startCallback) {
 
 }
 
-// Global message function
 function showMessage(location, message) {
     console.log('\n\nSLIDEVS.JS'.red + ' ------------------------------------------------------------------------------------\n'.grey);
     console.log('Something went wrong during '.grey + location.grey + ':\n'.grey + message);
     console.log('\n-----------------------------------------------------------------------------------------------\n\n'.grey);
 }
+
+// Function exports for testing
+module.exports.startSlidevs = startSlidevs;
+// module.exports.buildSlidevs = buildSlidevs;
+// module.exports.checkSlidevsFolder = checkSlidevsFolder;
+// module.exports.prepareSlides = prepareSlides;
+// module.exports.prepareVendors = prepareVendors;
+// module.exports.prepareScripts = prepareScripts;
+// module.exports.prepareStyling = prepareStyling;
+// module.exports.copyImages = copyImages;
+// module.exports.concatSlidevs = concatSlidevs;
+// module.exports.checkControls = checkControls;
+// module.exports.createSlidevServer = createSlidevServer;
+// module.exports.showMessage = showMessage;
