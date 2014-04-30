@@ -1,9 +1,9 @@
 # Slidevs.js
 
-Slidevs.js is a presentation framework which enables his user to create a HTML5 browser presentation which can be controlled from any mobile phone or tablet. Just write one main layout and each slide as a individual html file.
+Slidevs.js is a presentation framework which enables his user to create a HTML5 browser presentation which can be controlled from any mobile phone or tablet. Write one main layout and each slide as a individual html file.
 
 ```
-$ mkdir mySlidevs && cd mySlidevs && npm install - Not yet in the npm registery, but will be soon!
+$ npm install - Not yet in the npm registery, but will be soon!
 ```
 
 ---
@@ -38,7 +38,7 @@ exampleSlidevs.start();
 A Slidevs project folder should contain as least a main-layout.html, styling.css, and a slides folder. Within this slides folder you can add each slide as a individual html file, where you should number them as following: *slide-1.html*, *slide-2.html* and so on. You can also add scripts and images to your Slidevs, by simply adding a scripts folder and images folder to your project.
 
 #### The main layout
-This is the .html file where your slides are being concatenated in. Your main layout should at least look like following.
+This is the .html file where your slides are being concatenated in. Your main layout should at least look like:
 
 ```html
 <!doctype html>
