@@ -26,15 +26,28 @@ p {
     text-shadow: rgba(0,0,0,.3) 0 2px 0;
 }
 
+p.interactive {
+    -webkit-transition: all ease-in-out .5s;
+    -moz-transition: all ease-in-out .5s;
+    -o-transition: all ease-in-out .5s;
+    transition: all ease-in-out .5s;
+}
+
+span.interactive {
+    color: #D83B3B;
+    cursor: pointer;
+}
+
 a, a:hover, a:active, a:visited {
     color: white;
 }
 
-/* You can overwrite the colours of the progress bar as you wish */
+/*
+    You can overwrite the colours of the progress bar as you wish
+*/
+
 .progress-bar {
-    /**/
 }
 
 .progress {
-    /**/
 }

@@ -83,6 +83,7 @@ body.controls {
 }
 
 .pass-check {
+    z-index: 1000;
     width: 20em;
     height: 10em;
     padding: 1em;
@@ -374,12 +375,11 @@ body.controls {
     }
 
     .connection {
-        position: static;
-        right: auto;
+        right: 3em;
         bottom: auto;
         z-index: 1000;
         width: 62%;
-        margin: -4.2em auto 0;
+        margin-top: -4.2em;
     }
 
     .note-canvas, .note-tap, .saved-message {
@@ -398,7 +398,8 @@ body.controls {
         }
         .connection {
             width: 65%;
-            margin: -4.3em auto 0;
+            right: 5.5em;
+            margin-top: -4.2em;
         }
     }
 

@@ -1,10 +1,10 @@
 {
   "name": "slidevs",
   "version": "0.1.0",
-  "description": "Presentation framework which allows his user to create a nice HTML5 browser presentation and let him control this presentation extremely easily from any mobile device.",
+  "description": "Slidevs.js is a presentation framework which enables his user to create a HTML5 browser presentation which can be controlled from any mobile phone or tablet.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha -R spec -w ./test/test.slidevs.js"
+    "test": "./node_modules/.bin/mocha -R spec ./test/test.slidevs.js"
   },
   "repository": {
     "type": "git",
@@ -30,19 +30,18 @@
     "colors": "~0.6.2",
     "event-stream": "~3.1.2",
     "rimraf": "~2.2.6",
+    "ncp": "~0.5.1",
     "express": "~4.0.0",
     "node-watch": "~0.3.4",
     "socket.io": "~0.9.16",
     "gulp": "~3.6.2",
     "gulp-uglify": "~0.2.1",
     "gulp-minify-css": "~0.3.1",
-    "ncp": "~0.5.1",
     "gulp-concat": "~2.2.0"
   },
   "devDependencies": {
     "mocha": "*",
-    "chai": "*",
-    "sinon": "*"
+    "chai": "*"
   },
   "engines": {
     "node": ">= 0.10.0"
