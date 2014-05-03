@@ -1,9 +1,10 @@
 # Slidevs.js
 
-Slidevs.js is a presentation framework which enables his user to create a HTML5 browser presentation which can be controlled from any mobile phone or tablet, just by writing one main layout and each slide as a individual html file.
+Slidevs.js is a presentation framework which enables users to create a HTML5 browser presentation which can be controlled from any mobile phone or tablet, just by writing one main layout and each slide as a individual html file.
+Watch the demo [here](http://youtu.be/8aGtV2bgR5k).
 
 ```
-$ npm install - Almost in the NPM registery!
+$ npm install slidevs
 ```
 
 ### Creating a Slidevs
@@ -90,8 +91,6 @@ Setting the `controls.password` with a password *(string)* secures your controls
 ---
 
 #### Future fixes
-- Adding demo video
-- Adding to npm registery
 - Optimizing note drawing line
 - Controls white bottom stroke on mobile phones in landscape..
 - Download notes to mobile devices?

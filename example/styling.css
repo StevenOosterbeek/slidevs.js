@@ -11,7 +11,7 @@ h1 {
     width: 50%;
     margin: 3em auto 0;
     text-align: center;
-    color: #D83B3B;
+    color: white;
     text-shadow: rgba(0,0,0,.3) 0 2px 0;
 }
 
@@ -26,6 +26,12 @@ p {
     text-shadow: rgba(0,0,0,.3) 0 2px 0;
 }
 
+img.slidevs {
+    display: block;
+    width: 20%;
+    margin: 4em auto 0;
+}
+
 p.interactive {
     -webkit-transition: all ease-in-out .5s;
     -moz-transition: all ease-in-out .5s;
@@ -34,7 +40,7 @@ p.interactive {
 }
 
 span.interactive {
-    color: #D83B3B;
+    color: #2F302C;
     cursor: pointer;
 }
 

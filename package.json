@@ -1,6 +1,6 @@
 {
   "name": "slidevs",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Slidevs.js is a presentation framework which enables his user to create a HTML5 browser presentation which can be controlled from any mobile phone or tablet.",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "control",
     "controls"
   ],
-  "author": "Steven Oosterbeek <smile@stevenoosterbeek.nl>",
+  "author": "Steven Oosterbeek <smile@stevenoosterbeek.nl> (http://www.stevenoosterbeek.nl)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/StevenOosterbeek/slidevs/issues"

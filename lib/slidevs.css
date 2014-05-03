@@ -16,7 +16,7 @@ html, body {
     top: 0;
     width: 100%;
     height: 5px;
-    background-color: #2F302C;
+    background-color: #962929;
 }
 
 .progress, .slidevs-frame, .slidevs-strip, .note-canvas,
@@ -31,7 +31,7 @@ html, body {
 .progress {
     height: 100%;
     overflow: hidden;
-    background-color: rgba(255, 255, 255, .3);
+    background-color: rgba(255, 255, 255, .6);
 }
 
 .slidevs-frame {
@@ -39,7 +39,7 @@ html, body {
     height: 100%;
     width: 100%;
     overflow: hidden;
-    background-color: #474843;
+    background-color: #D83B3B;
 }
 
 .slidevs-strip {
