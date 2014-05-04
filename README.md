@@ -72,7 +72,7 @@ After the creation of the right folder structure and writing your Slidevs.js fil
 $ node my-slidevs-file.js
 ```
 
-Running your file will eventually log two created links - One for your Slidevs presentation and one for the controls *(If you enabled controls of course)*. You can now open up the first link *(Slidevs)* to show your presentation, and open up the other link *(Controls)* on any mobile device to control your Slidevs.
+Running your file will eventually log two created links - One for your Slidevs presentation and one for the controls *(If you enabled controls of course)*. You can now open up the first link *(Slidevs)* to show your presentation, and open up the other link *(Controls)* on any mobile device to control your Slidevs. If the controls tell you there isn't a connection with your Slidevs, tap on that message to try to establish a connection again.
 
 ##### Compresses and watches
 Slidevs.js compresses all script and styling files for better performance. It also starts a watch on your main layout, styling, slides, scripts and images. After saving any of these files your Slidev will be rebuild.
